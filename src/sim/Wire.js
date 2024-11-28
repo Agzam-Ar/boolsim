@@ -15,7 +15,7 @@ class WireElement extends React.Component {
 
 	    console.log('from', this.from);
 	    const listener = () => {this.repaint()};
-		this.from.listeners["link"] = listener;
+		this.from.listeners["linkTo" + link.to] = listener;
 	}
 
 
@@ -56,8 +56,8 @@ class WireElement extends React.Component {
 		
         return (<g stroke={pfrom.active ? "#ff00aa" : "var(--unactive)"}>
         	<path d={`M${x1},${y1} L${x2},${y2}`}/>
-        	<path className="bloor1" d={`M${x1},${y1} L${x2},${y2}`}/>
-        	<path className="bloor2" d={`M${x1},${y1} L${x2},${y2}`}/>
+        	{pfrom.active ? <path className="bloor1" d={`M${x1},${y1} L${x2},${y2}`}/> : (<g></g>)}
+        	{pfrom.active ? <path className="bloor2" d={`M${x1},${y1} L${x2},${y2}`}/> : (<g></g>)}
         </g>);
     }
 

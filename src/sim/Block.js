@@ -53,7 +53,7 @@ class BlockElement extends React.Component {
 
 		// return <rect width={box.w} height="100" />;
         return (<g x={box.x} y={box.y} transform={`translate(${box.x} ${box.y})`}> 
-			{this.getBody()}
+			<g transform={`rotate(${this.block.angle*90} 0 0)`}>{this.getBody()}</g>
 			{eOutputs}
 			{<text className="label">{this.block.name}</text>}
 			{/*<rect stroke="#f00" x={box.w/-2} y={box.h/-2} width={box.w} height={box.h}></rect>*/}

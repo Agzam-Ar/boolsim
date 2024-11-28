@@ -32,6 +32,12 @@ circle {
 	mix-blend-mode: screen;
 }
 
+circle, rect, path, g {
+/*	transition: .3s ease-in-out;*/
+/*	mix-blend-mode: screen;*/
+}
+
+
 .clickable {
 	cursor: pointer;
 }

@@ -157,7 +157,7 @@ class Block {
 		let sv = 0;
 		
 
-		let iDelta = this.inputs%2 == 1 ? Math.floor(index - this.inputs/2) : (index < this.inputs/2 ? index+1 : -index-this.inputs/2+1);
+		let iDelta = this.inputs%2 == 1 ? Math.floor(index - this.inputs/2+1) : (index < this.inputs/2 ? index+1 : -index-this.inputs/2+1);
 
 		if(this.type == 'not') {
 			u = -10;
@@ -203,7 +203,7 @@ class Wire {
 		}
 		links[`wire${this.from}to${this.to}`] = this;
 
-		blocks[this.from].listeners['linkUpdate'] = () => {this.update()};
+		blocks[this.from].listeners['linkUpdateTo' + this.to] = () => {this.update()};
 	}
 
 	update() {
@@ -217,23 +217,45 @@ class Wire {
 }
 
 
-let $x1  = new Block({type: "switch", x:0,y:0,  name:"x1",   angle: 0}); //{x: 0, y: 0, name: "x1"};
-let $x2  = new Block({type: "switch", x:0, y:2, name: "x2",  angle: 0});
-let $x3  = new Block({type: "switch", x:0, y:3, name: "x3",  angle: 0});
-let $or  = new Block({type: "or", 	  x:3, y:1, name: "or",  angle: 0});
-let $and = new Block({type: "and",    x:6, y:2, name: "and", angle: 0});
-let $not = new Block({type: "not",    x:3, y:3, name: "not", angle: 0});
+let $a  = new Block({type: "switch", x:-5, y:-2,  name: "x1",  angle: 0});
+let $b  = new Block({type: "switch", x:-5, y:0, name: "x2",  angle: 0});
+let $c  = new Block({type: "switch", x:-5, y:2, name: "x3",  angle: 0});
+
+let $notb = new Block({type: "not",  x:-2, y:0, name: "not", angle: 0});
+new Wire({from:$b.id, to:$notb.id, fromPort:0, toPort:0});
+
+// (!b & c) || (a & !b) || (a & c)
+
+let $and1 = new Block({type: "and",    x:1, y:1, name: "and", angle: 0});
+new Wire({from:$notb.id, to:$and1.id, fromPort:0, toPort:0});
+new Wire({from:$c.id,    to:$and1.id, fromPort:0, toPort:1});
+
+let $and2 = new Block({type: "and",    x:4, y:-1, name: "and", angle: 0});
+new Wire({from:$a.id, 	 to:$and2.id, fromPort:0, toPort:0});
+new Wire({from:$notb.id, to:$and2.id, fromPort:0, toPort:1});
+
+
+let $and3 = new Block({type: "and",    x:2, y:3, name: "and", angle: 0});
+new Wire({from:$a.id, to:$and3.id, fromPort:0, toPort:0});
+new Wire({from:$c.id, to:$and3.id, fromPort:0, toPort:1});
+
+
+
+let $or  = new Block({type: "or", 	  x:8, y:1, name: "or",  angle: 0, inputs: 3});
+new Wire({from:$and1.id, to:$or.id, fromPort:0, toPort:1});
+new Wire({from:$and2.id, to:$or.id, fromPort:0, toPort:2});
+new Wire({from:$and3.id, to:$or.id, fromPort:0, toPort:0});
+
+
 
 // new Block({type: "switch", x:0, y:3, name: "x2", angle: 0});
 
 
-new Wire({from:$x1.id, to:$or.id, fromPort:0, toPort:0});
-new Wire({from:$x2.id, to:$or.id, fromPort:0, toPort:1});
 
 
-new Wire({from:$or.id, to:$and.id, fromPort:0, toPort:0});
-new Wire({from:$x3.id, to:$not.id, fromPort:0, toPort:0});
-new Wire({from:$not.id, to:$and.id, fromPort:0, toPort:1});
+// new Wire({from:$or.id, to:$and.id, fromPort:0, toPort:0});
+// new Wire({from:$x3.id, to:$not.id, fromPort:0, toPort:0});
+// new Wire({from:$not.id, to:$and.id, fromPort:0, toPort:1});
 
 
 export default Vars;
