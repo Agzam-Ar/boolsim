@@ -1,0 +1,59 @@
+
+
+
+.editor-box {
+
+	background: var(--background-main);
+	color: #fff;
+
+
+	aspect-ratio: 1.9/1;
+
+/*	border: 1px red solid;*/
+
+
+	height: 100vh;
+
+	stroke-width: .25;
+	fill: transparent;
+/*	width: 100vw;*/
+
+}
+
+
+
+.block-box {
+	transition: .2s ease-in-out;
+}
+
+
+circle {
+	transition: .5s ease-in-out;
+	mix-blend-mode: screen;
+}
+
+.clickable {
+	cursor: pointer;
+}
+
+
+.bloor1 {
+	filter: blur(1px) brightness(1.1);
+	mix-blend-mode: screen;
+	pointer-events: none;
+}
+.bloor2 {
+	filter: blur(2.5px) brightness(1);
+	mix-blend-mode: screen;
+	pointer-events: none;
+}
+
+.label {
+	fill: white;
+	text-align: center;
+	text-anchor: middle;
+	dominant-baseline: middle;
+	font-size: 3px;
+	user-select: none;
+	pointer-events: none;
+}

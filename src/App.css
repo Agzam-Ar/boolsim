@@ -1,5 +1,15 @@
+:root {
+    --background-main: #050010;
+    --background-accent: #0A0023;
+    --unactive: #1C0062;
+}
+
+
+
 .App {
-  text-align: center;
+    text-align: center;
+    background: var(--background-accent);
+    overflow: hidden;
 }
 
 .App-logo {
