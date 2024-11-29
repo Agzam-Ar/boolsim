@@ -20,7 +20,17 @@
 
 }
 
+.block-pattle-box {
+	height: 100vh;
+}
 
+svg.block-pattle {
+	height: 100vh;
+}
+
+svg.block-pattle:hover {
+/*	filter: brightness(1.5);*/
+}
 
 .block-box {
 	transition: .2s ease-in-out;

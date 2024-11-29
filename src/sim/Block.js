@@ -59,13 +59,21 @@ class BlockElement extends React.Component {
 		// return <rect width={box.w} height="100" />;
         return (<g x={box.x} y={box.y} stroke={this.block.active ? "url(#gradient)" : "var(--unactive)"} transform={`translate(${box.x} ${box.y})`}> 
 			<rect onMouseDown={e => {
+				let block = this.block;
+
 				let pos = Vars.toSvgPoint(e);
+
+				if(this.block.preset) {
+        			console.log("down preset");
+        			block = this.block.createBlock();
+        			pos = Vars.getSvgMousePos();
+				}
 				Vars.mouse.draggType = 'move-block';
 				Vars.mouse.draggStart = pos;
 				Vars.mouse.draggLastPos = pos;
-				Vars.mouse.draggBlockPos = {x:this.block.box.x, y:this.block.box.y};
-				Vars.mouse.draggBlock = this.block;
-			}}class="element-box" strokeWidth={border} fill="transparent" x={box.w/-2} y={box.h/-2} width={box.w} height={box.h}></rect>
+				Vars.mouse.draggBlockPos = {x:block.box.x, y:block.box.y};
+				Vars.mouse.draggBlock = block;
+			}} class="element-box" strokeWidth={border} fill="transparent" x={box.w/-2} y={box.h/-2} width={box.w} height={box.h}></rect>
 
 			{eOutputs}
 			{border > 0 ? <g strokeWidth={border} stroke="var(--power-border-color)" fill="var(--power-border-color)" transform={`rotate(${this.block.angle*90} 0 0)`}>{body}</g> : []}

@@ -2,6 +2,7 @@
 
 let nextId = 0;
 let blocks = {};
+let blocksPattle = [];
 
 let links = [];
 
@@ -12,6 +13,8 @@ let Vars = {
 	mouse: {draggBlock: undefined, draggStart: undefined},
 	getBlocks: () => blocks,
 	getLinks: () => links,
+
+	getBlocksPattle: () => blocksPattle,
 	renderScheme: () => {},
 
 	updateBlocks: () => {
@@ -28,7 +31,17 @@ let Vars = {
 	    pt.x = evt.clientX == undefined ? evt.x : evt.clientX;
 	    pt.y = evt.clientY == undefined ? evt.y : evt.clientY;
 	    return pt.matrixTransform(svg.getScreenCTM().inverse());
-	}
+	},
+
+	getSvgMousePos() {
+		let transform = (p) => {
+			if(p == undefined) return undefined;
+			return {
+			x: (p.x - window.innerWidth/2)*Vars.camera.scale + Vars.camera.x,
+			y: (p.y - window.innerHeight/2)*Vars.camera.scale + Vars.camera.y,
+		}};
+		return transform(Vars.mouse.client);
+	},
 };
 
 window["Vars"] = Vars;
@@ -36,12 +49,32 @@ window["Vars"] = Vars;
 class Block {
 
 	constructor(props) {
-		this.id = nextId++;
+		if(props.preset == true) {
+			this.id = `preset-${blocksPattle.length}`;
+			blocksPattle.push(this);
+			this.createBlock = () => {
+				let pos = Vars.getSvgMousePos();
+				let $props = Object.assign({}, props);
+				$props.preset = undefined;
+				$props.x = pos.x/Vars.tilesize;
+				$props.y = pos.y/Vars.tilesize;
+				console.log($props);
+				return new Block($props);
+			}
+		} else {
+			this.id = nextId++;
+			if(props.preset != true) blocks[this.id] = this;
+		}
 		this.box 		= {x:0,y:0,w:Vars.tilesize,h:Vars.tilesize};
 	    this.type 		= 'switch';
 	    this.active 	= false;
 	    this.outputs = 1;
 	    this.inputs  = 1;
+
+	    if(props.preset == true) {
+	    	this.box.x = 0;
+	    	this.box.y = (blocksPattle.length-1)*20;
+	    }
 
 	    let type = props.type;
 		if(type == 'switch') {
@@ -63,7 +96,6 @@ class Block {
 		this.listeners  = {};
 
 
-		blocks[this.id] = this;
 
 		for(let k of Object.keys(props)) {
 			if(k == 'x' || k == 'y') {
@@ -261,7 +293,7 @@ window.addEventListener('mousedown', e => {
 window.addEventListener('mousemove', e => {
 	Vars.mouse.client = {x: e.clientX, y: e.clientY};
 	let pos = Vars.toSvgPoint(e);
-	Vars.mouse.canvasPos = pos;
+	Vars.mouse.canvasPos = Vars.getSvgMousePos();//pos;
 	if(e.buttons > 0) {
 		if(Vars.mouse.draggType == 'move-camera') {
 			pos = {x: e.clientX, y: e.clientY};
@@ -335,9 +367,19 @@ window.addEventListener("wheel", e => {
 	Vars.camera.x += (src.x - result.x);///Vars.camera.scale;
 	Vars.camera.y += (src.y - result.y);///Vars.camera.scale;
 	Vars.renderScheme();
-
-	console.log(src, result);
 });
+
+document.getElementById('root').addEventListener('wheel', e => {
+	e.preventDefault();
+}, true);
+
+new Block({preset: true, type: "switch", name: "Switch", angle: 0});
+new Block({preset: true, type: "not", 	 name: "Not", angle: 0});
+new Block({preset: true, type: "and", 	 name: "And", angle: 0});
+new Block({preset: true, type: "or", 	 name: "Or", angle: 0});
+
+
+new Block({type: "switch", x:0, y:0,		name: "00",  angle: 0});
 
 let $a  = new Block({type: "switch", x:-5, y:-2,  	name: "X1",  angle: 0});
 let $b  = new Block({type: "switch", x:-5, y:0,		name: "X2",  angle: 0});

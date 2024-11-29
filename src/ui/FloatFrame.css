@@ -5,12 +5,12 @@
 	top: 0;
 	left: 0;
 	position: fixed;
-	z-index: 10;
+/*	z-index: 10;*/
 
-	background: var(--frame-background);
+	background: #00000033;
 
 	border: .2em var(--power-border-color) solid;
-	user-select: none;
 
-	box-shadow: 0 0 1em #00000033;
+/*	box-shadow: 0 0 1em #00000033;*/
 }
+
