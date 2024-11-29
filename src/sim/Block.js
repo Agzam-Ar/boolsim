@@ -27,6 +27,7 @@ class BlockElement extends React.Component {
 	    // };
 	    const listener = () => {this.repaint()};
 		this.block.listeners["element"] = listener;
+		this.block.elementListener = listener;
 	}
 
 	repaint() {
@@ -57,7 +58,13 @@ class BlockElement extends React.Component {
 		let body = this.getBody();
 		// return <rect width={box.w} height="100" />;
         return (<g x={box.x} y={box.y} stroke={this.block.active ? "url(#gradient)" : "var(--unactive)"} transform={`translate(${box.x} ${box.y})`}> 
-			<rect class="element-box" strokeWidth={border} fill="transparent" x={box.w/-2} y={box.h/-2} width={box.w} height={box.h}></rect>
+			<rect onMouseDown={e => {
+				let pos = Vars.toSvgPoint(e);
+				Vars.mouse.draggStart = pos;
+				Vars.mouse.draggLastPos = pos;
+				Vars.mouse.draggBlockPos = {x:this.block.box.x, y:this.block.box.y};
+				Vars.mouse.draggBlock = this.block;
+			}}class="element-box" strokeWidth={border} fill="transparent" x={box.w/-2} y={box.h/-2} width={box.w} height={box.h}></rect>
 
 			{eOutputs}
 			{border > 0 ? <g strokeWidth={border} stroke="var(--power-border-color)" fill="var(--power-border-color)" transform={`rotate(${this.block.angle*90} 0 0)`}>{body}</g> : []}

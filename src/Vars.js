@@ -8,6 +8,7 @@ let links = [];
 let Vars = {
 	tilesize: 10,
 	nodesize: .3,
+	mouse: {draggBlock: undefined, draggStart: undefined},
 	getBlocks: () => blocks,
 	getLinks: () => links,
 	renderScheme: () => {},
@@ -17,6 +18,16 @@ let Vars = {
 			b.update();
 		}
 	},
+
+
+	toSvgPoint(evt) {
+		if(Vars.schemeSvg == undefined) return undefined;
+		let svg = Vars.schemeSvg();
+		let pt = svg.createSVGPoint();
+	    pt.x = evt.clientX;
+	    pt.y = evt.clientY;
+	    return pt.matrixTransform(svg.getScreenCTM().inverse());
+	}
 };
 
 window["Vars"] = Vars;
@@ -41,6 +52,8 @@ class Block {
 	    	this.inputs  = 2;
 		}
 		
+	    this.box.dragX 		= this.box.x;
+	    this.box.dragY 		= this.box.y;
 
 	    this.angle 		= 0;
 	    this.name 		= "Unnamed";
@@ -70,7 +83,11 @@ class Block {
 		}
 		this.updatePorts();
 	}
+	
 
+	render() {
+		if(this.elementListener != undefined) this.elementListener();
+	}
 
 	update() {
 		this.updatePorts();
@@ -82,6 +99,26 @@ class Block {
 
 
 	updatePorts() {
+		for (var i = 0; i < this.oPorts.length; i++) {
+			let pos = this.getOutputPos(i);
+			this.oPorts[i].x = this.box.x + pos.x;
+			this.oPorts[i].y = this.box.y + pos.y;
+			this.oPorts[i].dx = pos.x;
+			this.oPorts[i].dy = pos.y;
+			this.oPorts[i].drawSrcX = pos.srcX;
+			this.oPorts[i].drawSrcY = pos.srcY;
+		}
+		for (var i = 0; i < this.iPorts.length; i++) {
+			let pos = this.getInputPos(i);
+			this.iPorts[i].x = this.box.x + pos.x;
+			this.iPorts[i].y = this.box.y + pos.y;
+			this.iPorts[i].dx = pos.x;
+			this.iPorts[i].dy = pos.y;
+			this.iPorts[i].drawSrcX = pos.srcX;
+			this.iPorts[i].drawSrcY = pos.srcY;
+		}
+
+
 		if(this.type == 'switch') {
 			for (var i = 0; i < this.oPorts.length; i++) {
 				this.oPorts[i].active = this.active;
@@ -219,8 +256,43 @@ class Wire {
 
 window.addEventListener('mousedown', e => {
 
+});
+window.addEventListener('mousemove', e => {
+	let pos = Vars.toSvgPoint(e);
+	if(e.buttons > 0) {
+		if(Vars.mouse.draggBlock != undefined) {
+			
+			// Vars.mouse.draggBlock.box.dragX += pos.x - Vars.mouse.draggLastPos.x;
+			// Vars.mouse.draggBlock.box.dragY += pos.y - Vars.mouse.draggLastPos.y;
+			let x = Vars.mouse.draggBlockPos.x + pos.x - Vars.mouse.draggStart.x;
+			let y = Vars.mouse.draggBlockPos.y + pos.y - Vars.mouse.draggStart.y;
+			Vars.mouse.draggBlock.box.x = x;//Math.round(x/Vars.tilesize)*Vars.tilesize;
+			Vars.mouse.draggBlock.box.y = y;// Math.round(y/Vars.tilesize)*Vars.tilesize;
 
-	console.log("Down", e);
+
+			Vars.mouse.draggBlock.updatePorts();
+			// Vars.mouse.draggBlock.render();
+			Vars.renderScheme();
+
+			Vars.mouse.draggLastPos = pos;
+		console.log("drawg");
+		}
+	}
+});
+window.addEventListener('mouseup', e => {
+	if(Vars.mouse.draggBlock != undefined) {
+		let x = Vars.mouse.draggBlock.box.x;
+		let y = Vars.mouse.draggBlock.box.y;
+		x = Math.round(x/Vars.tilesize)*Vars.tilesize;
+		y = Math.round(y/Vars.tilesize)*Vars.tilesize;
+		Vars.mouse.draggBlock.box.x = x;
+		Vars.mouse.draggBlock.box.y = y;
+			Vars.renderScheme();
+		console.log("reset pos", x, y);
+
+		Vars.mouse.draggBlock = undefined;
+		Vars.mouse.draggStart = undefined;
+	}
 });
 
 

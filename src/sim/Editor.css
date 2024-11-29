@@ -46,9 +46,11 @@ circle, rect, path, g {
 }
 
 .element-box {
-	fill: var(--background-main);
-	stroke: var(--background-main);
-	mix-blend-mode: difference;
+	fill: transparent; 
+/*	var(--background-main);*/
+/*	stroke: var(--background-main);*/
+	stroke: transparent;
+/*	mix-blend-mode: difference;*/
 	cursor: crosshair;
 }
 

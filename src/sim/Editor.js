@@ -4,11 +4,12 @@ import BlockElement from './Block';
 import WireElement from './Wire';
 import Vars from '../Vars';
 import Themes from '../Themes'
-import {useState} from 'react'
+import {useState, useRef} from 'react'
 
 function Editor() {
  	const [repaints, setRepaints] = useState(0);
-	
+  	const ref = useRef(null);
+  	Vars.schemeSvg = () => ref.current;
 
 	Vars.renderScheme = () => {
 		setRepaints(() => repaints+1);
@@ -45,7 +46,7 @@ function Editor() {
 
 	return <div className="editor-box">
 		
-		<svg viewBox={`-95 -50 190 100`} xmlns="http://www.w3.org/2000/svg" id="main-svg" className="editor-box" fill="#7a7a7a">
+		<svg ref={ref} viewBox={`-95 -50 190 100`} xmlns="http://www.w3.org/2000/svg" id="main-svg" className="editor-box" fill="#7a7a7a">
 			<defs>
 				<linearGradient id="gradient" x1="0%" y1="0%" x2="0%" y2="100%">
 					<stop offset="0%" stopColor="var(--power0)" />

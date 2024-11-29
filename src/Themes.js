@@ -64,7 +64,25 @@ const Themes = {
 		powerBorderSize: 2,
 		powerBorderColor: "#000000",
 		mixBlend: "",
-	}
+	},
+
+	simpleDark: {
+    	backgroundMain: "#1B1B1B",
+    	backgroundAccent: "#212121",
+    	unactive: "#545454",
+    	power0: "#5E9EFF",
+    	power50: "#5E9EFF",
+    	power100: "#5E9EFF",
+    	labelColor: "#fff",
+    	funcColor: "#545454",
+    	funcAccent: "#878787",
+
+		powerSize: .75,
+		glow: false,
+		powerBorderSize: 2,
+		powerBorderColor: "#000000",
+		mixBlend: "",
+	},
 
 
 };
@@ -77,6 +95,7 @@ Themes.apply(Themes.simple);
 window.addEventListener("keydown", (e) => {
 	if(e.key == '1') Themes.apply(Themes.space);
 	if(e.key == '2') Themes.apply(Themes.simple);
+	if(e.key == '3') Themes.apply(Themes.simpleDark);
 });
 
 
