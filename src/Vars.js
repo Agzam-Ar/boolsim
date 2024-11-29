@@ -10,6 +10,7 @@ let Vars = {
 	nodesize: .3,
 	getBlocks: () => blocks,
 	getLinks: () => links,
+	renderScheme: () => {},
 
 	updateBlocks: () => {
 		for (let b of Object.values(blocks)) {
@@ -216,10 +217,16 @@ class Wire {
 	}
 }
 
+window.addEventListener('mousedown', e => {
 
-let $a  = new Block({type: "switch", x:-5, y:-2,  name: "x1",  angle: 0});
-let $b  = new Block({type: "switch", x:-5, y:0, name: "x2",  angle: 0});
-let $c  = new Block({type: "switch", x:-5, y:2, name: "x3",  angle: 0});
+
+	console.log("Down", e);
+});
+
+
+let $a  = new Block({type: "switch", x:-5, y:-2,  	name: "X1",  angle: 0});
+let $b  = new Block({type: "switch", x:-5, y:0,		name: "X2",  angle: 0});
+let $c  = new Block({type: "switch", x:-5, y:2,		name: "X3",  angle: 0});
 
 let $notb = new Block({type: "not",  x:-2, y:0, name: "not", angle: 0});
 new Wire({from:$b.id, to:$notb.id, fromPort:0, toPort:0});

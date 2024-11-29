@@ -3,9 +3,21 @@ import './Editor.css';
 import BlockElement from './Block';
 import WireElement from './Wire';
 import Vars from '../Vars';
+import Themes from '../Themes'
+import {useState} from 'react'
 
 function Editor() {
+ 	const [repaints, setRepaints] = useState(0);
+	
+
+	Vars.renderScheme = () => {
+		setRepaints(() => repaints+1);
+	};
+
 	Vars.updateBlocks();
+
+
+
 
 	let eBlocks = [];
 	let bs = Vars.getBlocks();
@@ -29,26 +41,30 @@ function Editor() {
 		}
 	}
 
+
+
 	return <div className="editor-box">
 		
 		<svg viewBox={`-95 -50 190 100`} xmlns="http://www.w3.org/2000/svg" id="main-svg" className="editor-box" fill="#7a7a7a">
 			<defs>
 				<linearGradient id="gradient" x1="0%" y1="0%" x2="0%" y2="100%">
-					<stop offset="0%" stopColor="#ff00aa" />
-					<stop offset="100%" stopColor="#00FFF1" />
+					<stop offset="0%" stopColor="var(--power0)" />
+					<stop offset="100%" stopColor="var(--power100)" />
 				</linearGradient>
 				<linearGradient id="path-gradient" spreadMethod="pad" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="-10">
-					<stop offset="0%" stopColor="#ff00aa" stopOpacity="1"></stop>
-					<stop offset="100%" stopColor="#00FFF1" stopOpacity="1"></stop>
+					<stop offset="0%" stopColor="var(--power0)" />
+					<stop offset="100%" stopColor="var(--power100)" />
 				</linearGradient>
 			</defs>
 				<g fill="var(--background-accent)">
 					{ePoints}
 				</g>
-				{eBlocks}
 				<g stroke="#fff">
 					{eWires}
 				</g>
+				{eBlocks}
+
+				{/*{dragged}*/}
 				{/*<Block key={`key-1`} uid={-1} x={0} y={0} name={"b.name"}/>*/}
 		</svg>
 	</div>
