@@ -8,6 +8,7 @@ let links = [];
 let Vars = {
 	tilesize: 10,
 	nodesize: .3,
+	camera: {x:0, y:0, width: window.innerWidth, height: window.innerHeight, scale: 1/10},
 	mouse: {draggBlock: undefined, draggStart: undefined},
 	getBlocks: () => blocks,
 	getLinks: () => links,
@@ -24,8 +25,8 @@ let Vars = {
 		if(Vars.schemeSvg == undefined) return undefined;
 		let svg = Vars.schemeSvg();
 		let pt = svg.createSVGPoint();
-	    pt.x = evt.clientX;
-	    pt.y = evt.clientY;
+	    pt.x = evt.clientX == undefined ? evt.x : evt.clientX;
+	    pt.y = evt.clientY == undefined ? evt.y : evt.clientY;
 	    return pt.matrixTransform(svg.getScreenCTM().inverse());
 	}
 };
@@ -258,24 +259,28 @@ window.addEventListener('mousedown', e => {
 
 });
 window.addEventListener('mousemove', e => {
+	Vars.mouse.client = {x: e.clientX, y: e.clientY};
 	let pos = Vars.toSvgPoint(e);
+	Vars.mouse.canvasPos = pos;
 	if(e.buttons > 0) {
-		if(Vars.mouse.draggBlock != undefined) {
-			
-			// Vars.mouse.draggBlock.box.dragX += pos.x - Vars.mouse.draggLastPos.x;
-			// Vars.mouse.draggBlock.box.dragY += pos.y - Vars.mouse.draggLastPos.y;
-			let x = Vars.mouse.draggBlockPos.x + pos.x - Vars.mouse.draggStart.x;
-			let y = Vars.mouse.draggBlockPos.y + pos.y - Vars.mouse.draggStart.y;
-			Vars.mouse.draggBlock.box.x = x;//Math.round(x/Vars.tilesize)*Vars.tilesize;
-			Vars.mouse.draggBlock.box.y = y;// Math.round(y/Vars.tilesize)*Vars.tilesize;
-
-
-			Vars.mouse.draggBlock.updatePorts();
-			// Vars.mouse.draggBlock.render();
+		if(Vars.mouse.draggType == 'move-camera') {
+			pos = {x: e.clientX, y: e.clientY};
+			let x = Vars.mouse.draggBlockPos.x - (pos.x - Vars.mouse.draggStart.x)*Vars.camera.scale;
+			let y = Vars.mouse.draggBlockPos.y - (pos.y - Vars.mouse.draggStart.y)*Vars.camera.scale;
+			Vars.camera.x = x;
+			Vars.camera.y = y;
 			Vars.renderScheme();
 
+			return;
+		}
+		if(Vars.mouse.draggType == 'move-block') { //Vars.mouse.draggBlock != undefined) {
+			let x = Vars.mouse.draggBlockPos.x + pos.x - Vars.mouse.draggStart.x;
+			let y = Vars.mouse.draggBlockPos.y + pos.y - Vars.mouse.draggStart.y;
+			Vars.mouse.draggBlock.box.x = x;
+			Vars.mouse.draggBlock.box.y = y;
+			Vars.mouse.draggBlock.updatePorts();
+			Vars.renderScheme();
 			Vars.mouse.draggLastPos = pos;
-		console.log("drawg");
 		}
 	}
 });
@@ -293,8 +298,46 @@ window.addEventListener('mouseup', e => {
 		Vars.mouse.draggBlock = undefined;
 		Vars.mouse.draggStart = undefined;
 	}
+	Vars.mouse.draggType = undefined;
+	Vars.mouse.draggStart = undefined;
+	Vars.mouse.draggLastPos = undefined;
+	Vars.mouse.draggBlockPos = undefined;
 });
 
+
+window.addEventListener('resize', e => {
+	Vars.camera.width = window.innerWidth;
+	Vars.camera.height = window.innerHeight;
+	Vars.renderScheme();
+});
+
+
+window.addEventListener('contextmenu', e => {
+	e.preventDefault();
+});
+
+window.addEventListener("wheel", e => {
+	const scrollPower = .03;
+	let transform = (p) => {return {
+		x: (p.x - window.innerWidth/2)*Vars.camera.scale,
+		y: (p.y - window.innerHeight/2)*Vars.camera.scale,
+	}};
+	let src = transform(Vars.mouse.client);//.x*Vars.camera.scale, y: Vars.mouse.client.y*Vars.camera.scale};
+	if(e.deltaY > 0) {
+		Vars.camera.scale += scrollPower;
+	} else {
+		if(Vars.camera.scale - scrollPower > 0) {
+			Vars.camera.scale -= scrollPower;
+		}
+	}
+	let result = transform(Vars.mouse.client);//{x: Vars.mouse.client.x*Vars.camera.scale, y: Vars.mouse.client.y*Vars.camera.scale};
+
+	Vars.camera.x += (src.x - result.x);///Vars.camera.scale;
+	Vars.camera.y += (src.y - result.y);///Vars.camera.scale;
+	Vars.renderScheme();
+
+	console.log(src, result);
+});
 
 let $a  = new Block({type: "switch", x:-5, y:-2,  	name: "X1",  angle: 0});
 let $b  = new Block({type: "switch", x:-5, y:0,		name: "X2",  angle: 0});

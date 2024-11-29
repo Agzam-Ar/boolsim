@@ -60,6 +60,7 @@ class BlockElement extends React.Component {
         return (<g x={box.x} y={box.y} stroke={this.block.active ? "url(#gradient)" : "var(--unactive)"} transform={`translate(${box.x} ${box.y})`}> 
 			<rect onMouseDown={e => {
 				let pos = Vars.toSvgPoint(e);
+				Vars.mouse.draggType = 'move-block';
 				Vars.mouse.draggStart = pos;
 				Vars.mouse.draggLastPos = pos;
 				Vars.mouse.draggBlockPos = {x:this.block.box.x, y:this.block.box.y};

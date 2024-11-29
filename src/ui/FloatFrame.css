@@ -1,0 +1,16 @@
+
+
+
+.floatframe {
+	top: 0;
+	left: 0;
+	position: fixed;
+	z-index: 10;
+
+	background: var(--frame-background);
+
+	border: .2em var(--power-border-color) solid;
+	user-select: none;
+
+	box-shadow: 0 0 1em #00000033;
+}

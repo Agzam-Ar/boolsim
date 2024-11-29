@@ -7,7 +7,7 @@
 	color: #fff;
 
 
-	aspect-ratio: 1.9/1;
+/*	aspect-ratio: 1.9/1;*/
 
 /*	border: 1px red solid;*/
 
@@ -51,7 +51,7 @@ circle, rect, path, g {
 /*	stroke: var(--background-main);*/
 	stroke: transparent;
 /*	mix-blend-mode: difference;*/
-	cursor: crosshair;
+/*	cursor: crosshair;*/
 }
 
 .element-box:hover {

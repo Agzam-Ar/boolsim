@@ -3,8 +3,6 @@ import Vars from './Vars';
 const Themes = {
 	apply: (theme) => {
 		Themes.theme = theme;
-			console.log("Applying theme", theme);
-
 		for (var name of Object.keys(theme)) {
 			let cssName = Themes.toCssVarName(name);
 			// console.log(name, cssName, theme[name]);
@@ -59,6 +57,8 @@ const Themes = {
     	funcColor: "#fff",
     	funcAccent: "#D2D2D2",
 
+    	frameBackground: "#9E9E9E",
+
 		powerSize: .75,
 		glow: false,
 		powerBorderSize: 2,
@@ -83,8 +83,8 @@ const Themes = {
 		powerBorderColor: "#000000",
 		mixBlend: "",
 	},
-
-
+	
+	
 };
 
 

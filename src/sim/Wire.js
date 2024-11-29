@@ -57,12 +57,27 @@ class WireElement extends React.Component {
 		let gradientName = `wire-gradient-${this.link.from}-${this.link.to}`;
 		
 
-		// let cx = (x1+x2)/2;
-		// let cy = (y1+y2)/2;
+		let cx = (x1+x2)/2;
+		let cy = (y1+y2)/2;
+
+		let h = x2 > x1;//Math.abs(x1-x2) < Math.abs(y1-y2);
+		// let xt = Math.abs(x1-x2)/Math.abs(y1-y2);
 
 		let d = `M${x1},${y1} L${x2},${y2}`;
-		d = `M${x1},${y1} Q${x1},${y2} ${x2},${y2}`;
-		// d = `M${x1},${y1} S${x1},${cy} ${cx},${cy} S${x2},${cy} ${x2},${y2}`;
+
+		if(x2 > x1) {
+			d = `M${x1},${y1} Q${x1},${y2} ${x2},${y2}`;
+		} else {
+			d = `M${x1},${y1} Q${x2},${y1} ${x2},${y2}`;
+		}
+
+
+		// d = `M${x1},${y1} S${x1},${y2} ${cx},${cy} S${x2},${cy} ${x2},${y2}`;
+
+		// d = `M${x1},${y1}  Q${h ? cx : x1},${h ? y1 : cy} ${cx},${cy} T${x2},${y2}`;
+
+
+		// d = `M${x1},${y1}  Q${h ? cx : x1},${h ? y1 : cy} ${cx},${cy} T${x2},${y2}`;
 
 
 		let glow = pfrom.active && Themes.theme.glow;
