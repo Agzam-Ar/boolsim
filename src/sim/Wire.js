@@ -13,7 +13,6 @@ class WireElement extends React.Component {
 		
 		this.state = {};
 
-	    console.log('from', this.from);
 	    const listener = () => {this.repaint()};
 		this.from.listeners["linkTo" + link.to] = listener;
 	}
@@ -53,11 +52,30 @@ class WireElement extends React.Component {
 		y1 += sin*Vars.nodesize;
 		x2 -= cos*Vars.nodesize;
 		y2 -= sin*Vars.nodesize;
+
+		let gradientName = `wire-gradient-${this.link.from}-${this.link.to}`;
+		
+
+		// let cx = (x1+x2)/2;
+		// let cy = (y1+y2)/2;
+
+		let d = `M${x1},${y1} L${x2},${y2}`;
+		d = `M${x1},${y1} Q${x1},${y2} ${x2},${y2}`;
+		// d = `M${x1},${y1} S${x1},${cy} ${cx},${cy} S${x2},${cy} ${x2},${y2}`;
 		
         return (<g stroke={pfrom.active ? "#ff00aa" : "var(--unactive)"}>
-        	<path d={`M${x1},${y1} L${x2},${y2}`}/>
-        	{pfrom.active ? <path className="bloor1" d={`M${x1},${y1} L${x2},${y2}`}/> : (<g></g>)}
-        	{pfrom.active ? <path className="bloor2" d={`M${x1},${y1} L${x2},${y2}`}/> : (<g></g>)}
+        	<defs>
+				<linearGradient id={gradientName} spreadMethod="pad" gradientUnits="userSpaceOnUse" x1={x1} y1={y1} x2={x2} y2={y2}>
+					<stop offset="0%" stopColor="#00FFF1" stopOpacity="1"></stop>
+					<stop offset="50%" stopColor="#ff00aa" stopOpacity="1"></stop>
+					<stop offset="100%" stopColor="#00FFF1" stopOpacity="1"></stop>
+				</linearGradient>
+        	</defs>
+        	<g className="light" stroke={pfrom.active ? `url(#${gradientName})` : "var(--unactive)"} >
+        		<path d={d}/>
+        		{pfrom.active ? <path className="bloor1" d={d}/> : (<g></g>)}
+        		{pfrom.active ? <path className="bloor2" d={d}/> : (<g></g>)}
+        	</g>
         </g>);
     }
 
