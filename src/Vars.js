@@ -6,6 +6,9 @@ let blocksPattle = [];
 
 let links = [];
 
+
+let wirePreset;
+
 let Vars = {
 	tilesize: 10,
 	nodesize: .3,
@@ -13,6 +16,7 @@ let Vars = {
 	mouse: {draggBlock: undefined, draggStart: undefined},
 	getBlocks: () => blocks,
 	getLinks: () => links,
+	wirePreset: () => wirePreset,
 
 	getBlocksPattle: () => blocksPattle,
 	renderScheme: () => {},
@@ -49,6 +53,7 @@ window["Vars"] = Vars;
 class Block {
 
 	constructor(props) {
+		this.overlay = false;
 		if(props.preset == true) {
 			this.id = `preset-${blocksPattle.length}`;
 			blocksPattle.push(this);
@@ -272,12 +277,15 @@ class Wire {
 			}
 			else this[k] = props[k];
 		}
-		links[`wire${this.from}to${this.to}`] = this;
+		if(this.preset) return;
+		links[`wire${this.from}p${this.fromPort}to${this.to}p${this.toPort}`] = this;
 
 		blocks[this.from].listeners['linkUpdateTo' + this.to] = () => {this.update()};
 	}
 
 	update() {
+		if(this.preset) return;
+
 		let from  = blocks[this.from];
 		let to    = blocks[this.to];
 		let pfrom = from.oPorts[this.toPort];
@@ -313,15 +321,28 @@ window.addEventListener('mousemove', e => {
 			Vars.mouse.draggBlock.updatePorts();
 			Vars.renderScheme();
 			Vars.mouse.draggLastPos = pos;
+			Vars.mouse.draggBlock.overlay = true;
+		}
+		if(Vars.mouse.draggType == 'create-wire') { //Vars.mouse.draggBlock != undefined) {
+			// let x = Vars.mouse.draggBlockPos.x + pos.x - Vars.mouse.draggStart.x;
+			// let y = Vars.mouse.draggBlockPos.y + pos.y - Vars.mouse.draggStart.y;
+			// Vars.mouse.draggBlock.box.x = x;
+			// Vars.mouse.draggBlock.box.y = y;
+			// Vars.mouse.draggBlock.updatePorts();
+			Vars.renderScheme();
+			// Vars.mouse.draggLastPos = pos;
+			// Vars.mouse.draggBlock.overlay = true;
 		}
 	}
 });
+
 window.addEventListener('mouseup', e => {
 	if(Vars.mouse.draggBlock != undefined) {
 		let x = Vars.mouse.draggBlock.box.x;
 		let y = Vars.mouse.draggBlock.box.y;
 		x = Math.round(x/Vars.tilesize)*Vars.tilesize;
 		y = Math.round(y/Vars.tilesize)*Vars.tilesize;
+		Vars.mouse.draggBlock.overlay = false;
 		Vars.mouse.draggBlock.box.x = x;
 		Vars.mouse.draggBlock.box.y = y;
 			Vars.renderScheme();
@@ -330,6 +351,19 @@ window.addEventListener('mouseup', e => {
 		Vars.mouse.draggBlock = undefined;
 		Vars.mouse.draggStart = undefined;
 	}
+	if(Vars.mouse.draggType == 'create-wire') {
+		let l = Vars.wirePreset();
+		console.log("Preset result", Object.assign({}, l));
+		if(l.from != undefined && l.from != 'mouse' && l.to != undefined && l.to != 'mouse') {
+
+			let w = new Wire({from:l.from, to:l.to, fromPort:l.fromPort, toPort:l.toPort});
+		}
+
+		Vars.wirePreset().from = undefined;
+		Vars.wirePreset().to = undefined;
+	}
+	
+
 	Vars.mouse.draggType = undefined;
 	Vars.mouse.draggStart = undefined;
 	Vars.mouse.draggLastPos = undefined;
@@ -377,9 +411,9 @@ new Block({preset: true, type: "switch", name: "Switch", angle: 0});
 new Block({preset: true, type: "not", 	 name: "Not", angle: 0});
 new Block({preset: true, type: "and", 	 name: "And", angle: 0});
 new Block({preset: true, type: "or", 	 name: "Or", angle: 0});
+wirePreset = new Wire({preset: true});
 
-
-new Block({type: "switch", x:0, y:0,		name: "00",  angle: 0});
+// new Block({type: "switch", x:0, y:0,		name: "00",  angle: 0});
 
 let $a  = new Block({type: "switch", x:-5, y:-2,  	name: "X1",  angle: 0});
 let $b  = new Block({type: "switch", x:-5, y:0,		name: "X2",  angle: 0});
@@ -387,8 +421,6 @@ let $c  = new Block({type: "switch", x:-5, y:2,		name: "X3",  angle: 0});
 
 let $notb = new Block({type: "not",  x:-2, y:0, name: "not", angle: 0});
 new Wire({from:$b.id, to:$notb.id, fromPort:0, toPort:0});
-
-// (!b & c) || (a & !b) || (a & c)
 
 let $and1 = new Block({type: "and",    x:1, y:1, name: "and", angle: 0});
 new Wire({from:$notb.id, to:$and1.id, fromPort:0, toPort:0});
@@ -403,13 +435,10 @@ let $and3 = new Block({type: "and",    x:2, y:3, name: "and", angle: 0});
 new Wire({from:$a.id, to:$and3.id, fromPort:0, toPort:0});
 new Wire({from:$c.id, to:$and3.id, fromPort:0, toPort:1});
 
-
-
 let $or  = new Block({type: "or", 	  x:8, y:1, name: "or",  angle: 0, inputs: 3});
 new Wire({from:$and1.id, to:$or.id, fromPort:0, toPort:1});
 new Wire({from:$and2.id, to:$or.id, fromPort:0, toPort:2});
 new Wire({from:$and3.id, to:$or.id, fromPort:0, toPort:0});
-
 
 
 // new Block({type: "switch", x:0, y:3, name: "x2", angle: 0});

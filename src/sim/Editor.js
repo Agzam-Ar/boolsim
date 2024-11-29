@@ -22,45 +22,53 @@ function Editor() {
 
 
 	let eBlocks = [];
+	let eBlocksOverlay = [];
 	let bs = Vars.getBlocks();
 	let ls = Vars.getLinks();
 	for (let key of Object.keys(bs)) {
 		let b = bs[key];
-		eBlocks.push(<BlockElement key={`block${b.id}`} block={b} />); // uid={key} x={b.x} y={b.y} name={b.name} angle={b.angle == undefined ? 1 : b.angle}
+		let eBlock = <BlockElement key={`block${b.id}`} block={b} />;
+		if(b.overlay) eBlocksOverlay.push(eBlock);
+		else eBlocks.push(eBlock); // uid={key} x={b.x} y={b.y} name={b.name} angle={b.angle == undefined ? 1 : b.angle}
 	}
 
 	let eWires = [];
+	let eWiresOverlay = [<WireElement key={"preset"} link={Vars.wirePreset()}/>];
 
 	for (let key of Object.keys(ls)) {
 		eWires.push(<WireElement key={key} link={ls[key]}/>);//<path stroke={pfrom.active ? "#fff" : "#333"} key={`wire${link.from}to${link.to}`} d={`M${pfrom.x},${pfrom.y} L${pto.x},${pto.y}`}/>);
 	}
 
-	let ePoints = [];
 
-	for (var y = -10; y < 10; y++) {
-		for (var x = -10; x < 10; x++) {
-			ePoints.push(<circle key={`x${x}y${y}`} cx={x*Vars.tilesize} cy={y*Vars.tilesize} r="1"/>);
-		}
-	}
+	let ePoints = [];
 
 	let viewBoxX = Vars.camera.x - (Vars.camera.width/2)*Vars.camera.scale;
 	let viewBoxY = Vars.camera.y - (Vars.camera.height/2)*Vars.camera.scale;
+
+	let viewBoxW = Vars.camera.width*Vars.camera.scale;
+	let viewBoxH = Vars.camera.height*Vars.camera.scale;
+
+	for (var y = Math.floor(viewBoxY/Vars.tilesize); y <= Math.ceil((viewBoxY+viewBoxH)/Vars.tilesize); y++) {
+		for (var x = Math.floor(viewBoxX/Vars.tilesize); x < Math.ceil((viewBoxX+viewBoxW)/Vars.tilesize); x++) {
+			ePoints.push(<circle key={`x${x}y${y}`} cx={x*Vars.tilesize} cy={y*Vars.tilesize} r="1"/>);
+		}
+	}
 
 	return <div className="editor-box">
 		
 		<svg onMouseDown={e => {
 			if(e.target != ref.current) return;
-			// if(e.button == 1 || e.button == 2) {
+			if(e.button == 1 || e.button == 2) {
 				let pos = Vars.toSvgPoint(e);
 				pos = {x: e.clientX, y: e.clientY};
 				Vars.mouse.draggType = "move-camera";
 				Vars.mouse.draggStart = pos;
 				Vars.mouse.draggBlockPos = {x:Vars.camera.x, y:Vars.camera.y};
 				Vars.mouse.draggLastPos = pos;
-			// }
+			}
 		}} ref={ref} style={{
 			aspectRatio: `${Vars.camera.width}/${Vars.camera.height}`,
-		}} viewBox={`${viewBoxX} ${viewBoxY} ${Vars.camera.width*Vars.camera.scale} ${Vars.camera.height*Vars.camera.scale}`} xmlns="http://www.w3.org/2000/svg" id="main-svg" className="editor-box" fill="#7a7a7a">
+		}} viewBox={`${viewBoxX} ${viewBoxY} ${viewBoxW} ${viewBoxH}`} xmlns="http://www.w3.org/2000/svg" id="main-svg" className="editor-box" fill="#7a7a7a">
 			<defs>
 				<linearGradient id="gradient" x1="0%" y1="0%" x2="0%" y2="100%">
 					<stop offset="0%" stopColor="var(--power0)" />
@@ -78,9 +86,6 @@ function Editor() {
 					{eWires}
 				</g>
 				{eBlocks}
-
-				{/*{dragged}*/}
-				{/*<Block key={`key-1`} uid={-1} x={0} y={0} name={"b.name"}/>*/}
 		</svg>
 
 		<div>
@@ -120,6 +125,23 @@ function Editor() {
 				</div>;		
 			}}/>
 		</div>
+
+		<svg style={{aspectRatio: `${Vars.camera.width}/${Vars.camera.height}`}} viewBox={`${viewBoxX} ${viewBoxY} ${Vars.camera.width*Vars.camera.scale} ${Vars.camera.height*Vars.camera.scale}`} xmlns="http://www.w3.org/2000/svg" id="main-svg" className="editor-box-overlay" fill="#7a7a7a">
+			<defs>
+				<linearGradient id="gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+					<stop offset="0%" stopColor="var(--power0)" />
+					<stop offset="100%" stopColor="var(--power100)" />
+				</linearGradient>
+				<linearGradient id="path-gradient" spreadMethod="pad" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="-10">
+					<stop offset="0%" stopColor="var(--power0)" />
+					<stop offset="100%" stopColor="var(--power100)" />
+				</linearGradient>
+			</defs>
+				<g stroke="#fff">
+					{eWiresOverlay}
+				</g>
+				{eBlocksOverlay}
+		</svg>
 	</div>
 }
 

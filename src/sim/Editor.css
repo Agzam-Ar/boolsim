@@ -2,6 +2,9 @@
 
 
 .editor-box {
+	position: fixed;
+	left: 0;
+	top: 0;
 
 	background: var(--background-main);
 	color: #fff;
@@ -18,6 +21,22 @@
 	fill: transparent;
 /*	width: 100vw;*/
 
+}
+
+.editor-box-overlay {
+	pointer-events: none;
+	position: fixed;
+	left: 0;
+	top: 0;
+	opacity: .5;
+	stroke-width: var(--power-size);
+	height: 100vh;
+	fill: transparent;
+}
+
+path {
+	stroke-linecap: round;
+	stroke-linejoin: round;
 }
 
 .block-pattle-box {
@@ -92,4 +111,5 @@ circle, rect, path, g {
 	user-select: none;
 	pointer-events: none;
 	fill: var(--label-color);
+    font-family: sans-serif;
 }

@@ -15,7 +15,7 @@ class WireElement extends React.Component {
 		this.state = {};
 
 	    const listener = () => {this.repaint()};
-		this.from.listeners["linkTo" + link.to] = listener;
+		if(this.from != undefined) this.from.listeners["linkTo" + link.to] = listener;
 	}
 
 
@@ -29,20 +29,29 @@ class WireElement extends React.Component {
 		let link = this.link;
 		let bs = Vars.getBlocks();
 
+		this.from = bs[link.from];
+		this.to = bs[link.to];
+
 		let from = this.from;
 		let to = this.to;
-		if(from == undefined) return <path d={"M0,0"}/>;
-		let pfrom = from.oPorts[link.fromPort];
-		let pto = to.iPorts[link.toPort];
 
-		pto.active = pfrom.active;
+		// if(this.link.preset) {
+		// 	console.log('Wire: ', link.from, link.fromPort);
+		// }
+
+		if(from == undefined && link.from != 'mouse') return <path d={"M0,0"}/>;
+		let pfrom = link.from == 'mouse' ? Vars.getSvgMousePos() : from.oPorts[link.fromPort];
+
+		if(to == undefined && link.to != 'mouse') return <path d={"M0,0"}/>;
+		let pto = link.to == 'mouse' ? Vars.getSvgMousePos() : to.iPorts[link.toPort];
+
+		pto.active = pfrom == undefined ? false : pfrom.active;
 		
-
-		let x1 = pfrom.x;
-		let y1 = pfrom.y;
+		let x1 = pfrom == undefined ? 0 : pfrom.x;
+		let y1 = pfrom == undefined ? 0 : pfrom.y;
 		let x2 = pto.x;
 		let y2 = pto.y;
-
+		
 
 		let angle = Math.atan2(y2-y1,x2-x1);
 		
@@ -79,11 +88,11 @@ class WireElement extends React.Component {
 
 		// d = `M${x1},${y1}  Q${h ? cx : x1},${h ? y1 : cy} ${cx},${cy} T${x2},${y2}`;
 
-
-		let glow = pfrom.active && Themes.theme.glow;
+		let pfromActive = (pfrom != undefined && pfrom.active);
+		let glow = pfromActive && Themes.theme.glow;
 		let border = Themes.theme.powerBorderSize * Themes.theme.powerSize;
 		
-        return (<g class="no-events" stroke={pfrom.active ? "#ff00aa" : "var(--unactive)"}>
+        return (<g class="no-events" stroke={pfromActive ? "#ff00aa" : "var(--unactive)"}>
         	<defs>
 				<linearGradient id={gradientName} spreadMethod="pad" gradientUnits="userSpaceOnUse" x1={x1} y1={y1} x2={x2} y2={y2}>
 					<stop offset="0%" stopColor="var(--power100)" stopOpacity="1"></stop>
@@ -91,7 +100,7 @@ class WireElement extends React.Component {
 					<stop offset="100%" stopColor="var(--power100)" stopOpacity="1"></stop>
 				</linearGradient>
         	</defs>
-        	<g className={Themes.theme.mixBlend} stroke={pfrom.active ? `url(#${gradientName})` : "var(--unactive)"} >
+        	<g className={Themes.theme.mixBlend} stroke={pfromActive ? `url(#${gradientName})` : "var(--unactive)"} >
         		{border > 0 ? <path strokeWidth={border} stroke="var(--power-border-color)" d={d}/> : (<g></g>)}
         		<path d={d}/>
         		{glow ? <path className="bloor1" d={d}/> : (<g></g>)}

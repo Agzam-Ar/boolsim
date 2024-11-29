@@ -44,12 +44,12 @@ class BlockElement extends React.Component {
 		let block = this.block;
 		for (var i = 0; i < this.block.oPorts.length; i++) {
 			let port = this.block.oPorts[i];
-			eOutputs.push(this.createOutput('o' + i, port));
+			eOutputs.push(this.createPort('o', i, port));
 		}
 
 		for (var i = 0; i < this.block.iPorts.length; i++) {
 			let port = this.block.iPorts[i];
-			eOutputs.push(this.createOutput('i' + i, port));
+			eOutputs.push(this.createPort('i', i, port));
 		}
 
 		let glow = this.block.active && Themes.theme.glow;
@@ -84,7 +84,7 @@ class BlockElement extends React.Component {
         </g>);
     }
 
-	createOutput(key, config) {
+	createPort(type, portId, config) {
 		let glow = config.active && Themes.theme.glow;
 		let border = Themes.theme.powerBorderSize * Themes.theme.powerSize;
 
@@ -107,25 +107,107 @@ class BlockElement extends React.Component {
 		let gradientName = `gradient-block-${this.block.id}-${x1}-${y1}-${x2}-${y2}`;
 		let d = `M${x1},${y1} L${x2},${y2}`;
 
-		return <g key={key} class="no-events" >
-
+		return <g key={type + portId} >
         	<defs>
 				<linearGradient id={gradientName} spreadMethod="pad" gradientUnits="userSpaceOnUse" x1={x1} y1={y1} x2={x2} y2={y2}>
 					<stop offset="0%" stopColor="var(--power50)" stopOpacity="1"></stop>
 					<stop offset="100%" stopColor="var(--power100)" stopOpacity="1"></stop>
 				</linearGradient>
         	</defs>
-			{border > 0 ? <path className={Themes.theme.mixBlend} d={d} strokeWidth={border} stroke="var(--power-border-color)" strokeLinecap="round" strokeLinejoin="miter"></path> : []}
+        	<g class="no-events" >
+				{border > 0 ? <path className={Themes.theme.mixBlend} d={d} strokeWidth={border} stroke="var(--power-border-color)" strokeLinecap="round" strokeLinejoin="miter"></path> : []}
+	
+				<path className="light" d={d} stroke={config.active ? `url(#${gradientName})` : "var(--unactive)"} strokeLinecap="round" strokeLinejoin="miter"></path>
+				{glow ? <path className="bloor1" d={d} stroke={config.active ? `url(#${gradientName})` : "var(--unactive)"} strokeLinecap="butt" strokeLinejoin="miter" fillOpacity="0" strokeMiterlimit="4" strokeOpacity="1"></path> : <g></g>}
+				{glow ? <path className="bloor2" d={d} stroke={config.active ? `url(#${gradientName})` : "var(--unactive)"} strokeLinecap="butt" strokeLinejoin="miter" fillOpacity="0" strokeMiterlimit="4" strokeOpacity="1"></path> : <g></g>}
+				
+				{border > 0 ? <circle strokeWidth={border} stroke="var(--power-border-color)" fill="var(--power-border-color)" cx={config.dx} cy={config.dy} r={size}></circle> : []}
+	
+				<circle stroke={config.active ? "var(--power100)" : "var(--unactive)"} fill="var(--unactive)" cx={config.dx} cy={config.dy} r={size}></circle>
+				{glow ? <circle className="bloor1" stroke={config.active ? "var(--power100)" : "none"} fill="none" cx={config.dx} cy={config.dy} r={size}></circle> : []}
+				{glow ? <circle className="bloor2" stroke={config.active ? "var(--power100)" : "none"} fill="none" cx={config.dx} cy={config.dy} r={size}></circle> : []}
+			</g>
+			<circle stroke="transparent" fill="transparent" strokeWidth={border} cx={config.dx} cy={config.dy} r={size} onMouseEnter={e => {
+				if(this.block.preset) return;
+				console.log('TODO');
+				// TODO
+				let wire = Vars.wirePreset();
 
-			<path className="light" d={d} stroke={config.active ? `url(#${gradientName})` : "var(--unactive)"} strokeLinecap="round" strokeLinejoin="miter"></path>
-			{glow ? <path className="bloor1" d={d} stroke={config.active ? `url(#${gradientName})` : "var(--unactive)"} strokeLinecap="butt" strokeLinejoin="miter" fillOpacity="0" strokeMiterlimit="4" strokeOpacity="1"></path> : <g></g>}
-			{glow ? <path className="bloor2" d={d} stroke={config.active ? `url(#${gradientName})` : "var(--unactive)"} strokeLinecap="butt" strokeLinejoin="miter" fillOpacity="0" strokeMiterlimit="4" strokeOpacity="1"></path> : <g></g>}
-			
-			{border > 0 ? <circle strokeWidth={border} stroke="var(--power-border-color)" fill="var(--power-border-color)" cx={config.dx} cy={config.dy} r={size}></circle> : []}
+				if(type == 'o') {
+					if(wire.from == 'mouse') {
+						wire.from = this.block.id;
+						wire.fromPort = portId;
+					}
+				}
+				if(type == 'i') {
+					if(wire.to == 'mouse') {
+						wire.to = this.block.id;
+						wire.toPort = portId;
+					}
+				}
+				console.log('Wire after enter',  Vars.wirePreset());
 
-			<circle stroke={config.active ? "var(--power100)" : "var(--unactive)"} fill="var(--unactive)" cx={config.dx} cy={config.dy} r={size}></circle>
-			{glow ? <circle className="bloor1" stroke={config.active ? "var(--power100)" : "none"} fill="none" cx={config.dx} cy={config.dy} r={size}></circle> : []}
-			{glow ? <circle className="bloor2" stroke={config.active ? "var(--power100)" : "none"} fill="none" cx={config.dx} cy={config.dy} r={size}></circle> : []}
+			}} onMouseLeave={e => {
+				if(this.block.preset) return;
+				// TODO
+				let wire = Vars.wirePreset();
+				if(this.block.id == wire.src) return;
+
+				if(type == 'o') {
+					if(wire.from == this.block.id) {
+						wire.from = 'mouse';
+						wire.fromPort = 0;
+					}
+				}
+				if(type == 'i') {
+					if(wire.to == this.block.id) {
+						wire.to = 'mouse';
+						wire.toPort = 0;
+					}
+				}
+				console.log('Wire after leave',  Vars.wirePreset());
+
+			}} onMouseDown={e => {
+				if(this.block.preset) return;
+				console.log('TODO');
+				// TODO
+				let wire = Vars.wirePreset();
+				wire.src = this.block.id;
+				
+				if(type == 'o') {
+					wire.from = this.block.id;
+					wire.fromPort = portId;
+					wire.to = 'mouse';
+					wire.toPort = 0;
+				}
+				if(type == 'i') {
+					wire.to = this.block.id;
+					wire.toPort = portId;
+					wire.from = 'mouse';
+					wire.fromPort = 0;
+				}
+
+				Vars.renderScheme();
+
+				console.log(wire);
+
+
+				let block = this.block;
+
+				let pos = Vars.toSvgPoint(e);
+
+				// if(this.block.preset) {
+        		// 	console.log("down preset");
+        		// 	block = this.block.createBlock();
+        		// 	pos = Vars.getSvgMousePos();
+				// }
+
+				Vars.mouse.draggType = 'create-wire';
+				Vars.mouse.draggStart = pos;
+				Vars.mouse.draggLastPos = pos;
+				Vars.mouse.draggBlockPos = {x:block.box.x, y:block.box.y};
+				Vars.mouse.draggBlock = block;
+			}}></circle>
 		</g>;
 	}
 
@@ -143,8 +225,9 @@ class BlockElement extends React.Component {
 		let border = Themes.theme.powerBorderSize * Themes.theme.powerSize;
 
 		if(type == 'switch') return <g>
-			<rect class="no-events" x={left*.9} y={top*.9} width={box.w*.9} height={box.h*.9}></rect>
-			<circle stroke={this.block.active ? "inherit" : "var(--func-accent)"} className="clickable" r={Math.min(box.w, box.h)*.3} onClick={() => {
+			<rect class="no-events" x={left} y={top} width={box.w} height={box.h}></rect>
+			<circle stroke={this.block.active ? "inherit" : "var(--func-accent)"} className={this.block.preset ? "no-events" : "clickable"} r={Math.min(box.w, box.h)*.25} onClick={() => {
+				if(this.block.preset) return;
 				this.block.active = !this.block.active;
 				this.block.update();
 			}}></circle>

@@ -7,10 +7,10 @@
 	position: fixed;
 /*	z-index: 10;*/
 
-	background: #00000033;
+	background: #00000077;
 
-	border: .2em var(--power-border-color) solid;
+	border: .1em var(--power-border-color) #00000077;
 
-/*	box-shadow: 0 0 1em #00000033;*/
+	box-shadow: 0 0 1em #00000077;
 }
 

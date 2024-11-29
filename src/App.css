@@ -14,6 +14,7 @@
     text-align: center;
     background: var(--background-accent);
     overflow: hidden;
+    font-family: sans-serif;
 }
 
 .App-logo {
