@@ -11,10 +11,8 @@ let frames = {};
 
 
 let state = {
-
 	blocks: {},
 	links: {},
-
 };
 
 
@@ -211,7 +209,7 @@ class Frame {
 }
 
 
-frames["blocks-pattle"] = new Frame({x:10,y:0, w:window.innerHeight*3/20, h:window.innerHeight});
+frames["blocks-pattle"] = new Frame({x:0,y:0, w:window.innerHeight*3/20, h:window.innerHeight*10/20});
 
 
 window["Vars"] = Vars;
@@ -318,39 +316,6 @@ class Block {
 		encoded += encodeName;
 		return encoded;
 	}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 	remove() {
 		Vars.getBlocks()[this.id] = undefined;
@@ -540,12 +505,6 @@ class Wire {
 	}
 
 
-
-
-
-
-
-
 	static decode(code, props) {
 		let wire = {blocks: props.state.blocks};
 		wire.from = Strings.decodeNumber(code, props);
@@ -564,43 +523,6 @@ class Wire {
 		encoded += Strings.encodeNumber(this.toPort);
 		return encoded;
 	}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 }
 
@@ -677,6 +599,14 @@ window.addEventListener('mousemove', e => {
 			Vars.mouse.draggLastPos = pos;
 			Vars.mouse.draggBlock.overlay = true;
 		}
+		if(Vars.mouse.draggType == 'move-frame') {
+			pos = {x: e.clientX, y: e.clientY};
+			let x = Vars.mouse.draggBlockPos.x + (pos.x - Vars.mouse.draggStart.x);
+			let y = Vars.mouse.draggBlockPos.y + (pos.y - Vars.mouse.draggStart.y);
+			Vars.mouse.draggBlock.box.x = Math.min(Math.max(0, x), Vars.camera.width - Vars.mouse.draggBlock.box.w);
+			Vars.mouse.draggBlock.box.y = Math.min(Math.max(0, y), Vars.camera.height - Vars.mouse.draggBlock.box.h);
+			Vars.renderScheme();
+		}
 		if(Vars.mouse.draggType == 'create-wire') { //Vars.mouse.draggBlock != undefined) {
 			// let x = Vars.mouse.draggBlockPos.x + pos.x - Vars.mouse.draggStart.x;
 			// let y = Vars.mouse.draggBlockPos.y + pos.y - Vars.mouse.draggStart.y;    
@@ -691,7 +621,7 @@ window.addEventListener('mousemove', e => {
 });
 
 window.addEventListener('mouseup', e => {
-	if(Vars.mouse.draggBlock != undefined) {
+	if(Vars.mouse.draggType == 'move-block') {
 		let x = Vars.mouse.draggBlock.box.x;
 		let y = Vars.mouse.draggBlock.box.y;
 		x = Math.round(x/Vars.tilesize)*Vars.tilesize;
@@ -710,6 +640,9 @@ window.addEventListener('mouseup', e => {
 		Vars.renderScheme();
 		Vars.mouse.draggBlock = undefined;
 		Vars.mouse.draggStart = undefined;
+	}
+	if(Vars.mouse.draggType == 'move-frame') {
+		
 	}
 	if(Vars.mouse.draggType == 'create-wire') {
 		let l = Vars.wirePreset();

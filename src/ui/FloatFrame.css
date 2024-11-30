@@ -16,7 +16,7 @@
 
 	background: var(--frame-border-color);
 
-	cursor: n-resize;
+/*	cursor: n-resize;*/
 	border: 2px solid transparent;
 }
 
@@ -29,6 +29,10 @@
 
 .floatframe > .framehead {
 	cursor: pointer;
+	user-select: none;
 	height: var(--frame-head-size);
 	background: var(--frame-head-color);
+	background-image: radial-gradient(var(--frame-head-color-accent) 30%, transparent 20%);
+	background-position: 0 0, 50px 50px;
+	background-size: calc(var(--frame-head-size) / 3) calc(var(--frame-head-size) / 3);
 }

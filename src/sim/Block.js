@@ -107,7 +107,7 @@ class BlockElement extends React.Component {
 			{glow ? <g transform={`rotate(${this.block.angle*90} 0 0)`} className="bloor1">{this.getBody()}</g> : []}
 			{glow ? <g transform={`rotate(${this.block.angle*90} 0 0)`} className="bloor2">{this.getBody()}</g> : []}
 			{<text className="label" stroke="none">{this.block.name}</text>}
-			{<text y="8" className="label" stroke="none">#{this.block.id}</text>}
+			{/*{<text y="8" className="label" stroke="none">#{this.block.id}</text>}*/}
         </g>);
     }
 

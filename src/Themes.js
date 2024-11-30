@@ -65,6 +65,7 @@ const Themes = {
     	frameBackground: "#9E9E9E",
     	frameHeadSize: "20px",
     	frameHeadColor: "#1B88E7",
+    	frameHeadColorAccent: "#57A5E5",
 
 		powerSize: .75,
 		glow: false,

@@ -21,7 +21,6 @@ class WireElement extends React.Component {
 	}
 
     render() {
-    	console.log(this.id);
 		let link = this.id == 'preset' ? Vars.wirePreset() : Vars.getLinks()[this.id];
 		let bs = Vars.getBlocks();
 
