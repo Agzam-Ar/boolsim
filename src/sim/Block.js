@@ -58,7 +58,20 @@ class BlockElement extends React.Component {
 		let body = this.getBody();
 		// return <rect width={box.w} height="100" />;
         return (<g x={box.x} y={box.y} stroke={this.block.active ? "url(#gradient)" : "var(--unactive)"} transform={`translate(${box.x} ${box.y})`}> 
-			<rect onMouseDown={e => {
+			<rect onClick={e => {
+        			if(this.block.preset) return;
+					Vars.selected.target = this.block;
+
+					Vars.selected.onKeyDown = e => {
+						if(e.code == 'Delete') {
+							this.block.remove();
+						}
+					};
+					console.log("Down");
+					Vars.renderScheme();
+        		}}
+
+        		onMouseDown={e => {
 				let block = this.block;
 
 				let pos = Vars.toSvgPoint(e);
@@ -129,7 +142,6 @@ class BlockElement extends React.Component {
 			</g>
 			<circle stroke="transparent" fill="transparent" strokeWidth={border} cx={config.dx} cy={config.dy} r={size} onMouseEnter={e => {
 				if(this.block.preset) return;
-				console.log('TODO');
 				// TODO
 				let wire = Vars.wirePreset();
 
@@ -145,11 +157,8 @@ class BlockElement extends React.Component {
 						wire.toPort = portId;
 					}
 				}
-				console.log('Wire after enter',  Vars.wirePreset());
-
 			}} onMouseLeave={e => {
 				if(this.block.preset) return;
-				// TODO
 				let wire = Vars.wirePreset();
 				if(this.block.id == wire.src) return;
 
@@ -165,12 +174,9 @@ class BlockElement extends React.Component {
 						wire.toPort = 0;
 					}
 				}
-				console.log('Wire after leave',  Vars.wirePreset());
 
 			}} onMouseDown={e => {
 				if(this.block.preset) return;
-				console.log('TODO');
-				// TODO
 				let wire = Vars.wirePreset();
 				wire.src = this.block.id;
 				
@@ -188,9 +194,6 @@ class BlockElement extends React.Component {
 				}
 
 				Vars.renderScheme();
-
-				console.log(wire);
-
 
 				let block = this.block;
 

@@ -6,6 +6,8 @@ let blocksPattle = [];
 
 let links = [];
 
+let frames = {};
+
 
 let wirePreset;
 
@@ -14,6 +16,7 @@ let Vars = {
 	nodesize: .3,
 	camera: {x:0, y:0, width: window.innerWidth, height: window.innerHeight, scale: 1/10},
 	mouse: {draggBlock: undefined, draggStart: undefined},
+	selected: {},
 	getBlocks: () => blocks,
 	getLinks: () => links,
 	wirePreset: () => wirePreset,
@@ -23,7 +26,7 @@ let Vars = {
 
 	updateBlocks: () => {
 		for (let b of Object.values(blocks)) {
-			b.update();
+			if(b != undefined) b.update();
 		}
 	},
 
@@ -46,7 +49,26 @@ let Vars = {
 		}};
 		return transform(Vars.mouse.client);
 	},
+
+	frame: (name) => frames[name],
 };
+
+
+class Frame {
+	
+	constructor(props) {
+		this.box 		= {x:0,y:0,w:Vars.tilesize,h:Vars.tilesize};
+		for(let k of Object.keys(props)) {
+			if(k == 'x' || k == 'y' || k == 'w' || k == 'h') this.box[k] = props[k];
+			else this[k] = props[k];
+		}
+	}
+	
+}
+
+
+frames["blocks-pattle"] = new Frame({x:0,y:0, w:window.innerHeight*3/20, h:window.innerHeight});
+
 
 window["Vars"] = Vars;
 
@@ -121,6 +143,11 @@ class Block {
 		}
 		this.updatePorts();
 	}
+
+	remove() {
+		blocks[this.id] = undefined;
+			Vars.renderScheme();
+	}
 	
 
 	render() {
@@ -131,7 +158,7 @@ class Block {
 		this.updatePorts();
 		
 		for (let l of Object.values(this.listeners)) {
-			l();
+			if(l != undefined) l();
 		}
 	}
 
@@ -278,26 +305,49 @@ class Wire {
 			else this[k] = props[k];
 		}
 		if(this.preset) return;
-		links[`wire${this.from}p${this.fromPort}to${this.to}p${this.toPort}`] = this;
 
-		blocks[this.from].listeners['linkUpdateTo' + this.to] = () => {this.update()};
+		this.id = `wire${this.from}p${this.fromPort}to${this.to}p${this.toPort}`; 
+		links[this.id] = this;
+		blocks[this.from].listeners['linkUpdateTo' + this.id] = () => {this.update()};
 	}
 
 	update() {
 		if(this.preset) return;
-
+		
 		let from  = blocks[this.from];
 		let to    = blocks[this.to];
+		if(to == undefined || from == undefined) {
+			this.remove();
+			return;
+		}
 		let pfrom = from.oPorts[this.toPort];
 		let pto   = to.iPorts[this.fromPort];
 		to.iPorts[this.toPort].active = from.oPorts[this.fromPort].active;
 		to.update();
 	}
+
+	remove() {
+		links[this.id] = undefined;
+		blocks[this.from].listeners['linkUpdateTo' + this.id] = undefined;
+		Vars.renderScheme();
+	}
+
 }
 
-window.addEventListener('mousedown', e => {
+window.addEventListener('keydown', e => {
 
+	if(Vars.selected.onKeyDown != undefined) Vars.selected.onKeyDown(e);
+	
+	
 });
+
+
+window.addEventListener('click', e => {
+});
+
+window.addEventListener('mousedown', e => {
+});
+
 window.addEventListener('mousemove', e => {
 	Vars.mouse.client = {x: e.clientX, y: e.clientY};
 	let pos = Vars.toSvgPoint(e);
@@ -325,7 +375,7 @@ window.addEventListener('mousemove', e => {
 		}
 		if(Vars.mouse.draggType == 'create-wire') { //Vars.mouse.draggBlock != undefined) {
 			// let x = Vars.mouse.draggBlockPos.x + pos.x - Vars.mouse.draggStart.x;
-			// let y = Vars.mouse.draggBlockPos.y + pos.y - Vars.mouse.draggStart.y;
+			// let y = Vars.mouse.draggBlockPos.y + pos.y - Vars.mouse.draggStart.y;    
 			// Vars.mouse.draggBlock.box.x = x;
 			// Vars.mouse.draggBlock.box.y = y;
 			// Vars.mouse.draggBlock.updatePorts();
@@ -345,29 +395,30 @@ window.addEventListener('mouseup', e => {
 		Vars.mouse.draggBlock.overlay = false;
 		Vars.mouse.draggBlock.box.x = x;
 		Vars.mouse.draggBlock.box.y = y;
-			Vars.renderScheme();
-		console.log("reset pos", x, y);
-
+		Vars.renderScheme();
 		Vars.mouse.draggBlock = undefined;
 		Vars.mouse.draggStart = undefined;
 	}
 	if(Vars.mouse.draggType == 'create-wire') {
 		let l = Vars.wirePreset();
-		console.log("Preset result", Object.assign({}, l));
 		if(l.from != undefined && l.from != 'mouse' && l.to != undefined && l.to != 'mouse') {
-
 			let w = new Wire({from:l.from, to:l.to, fromPort:l.fromPort, toPort:l.toPort});
 		}
 
-		Vars.wirePreset().from = undefined;
-		Vars.wirePreset().to = undefined;
 	}
 	
+	Vars.wirePreset().from = undefined;
+	Vars.wirePreset().to = undefined;
 
 	Vars.mouse.draggType = undefined;
 	Vars.mouse.draggStart = undefined;
 	Vars.mouse.draggLastPos = undefined;
 	Vars.mouse.draggBlockPos = undefined;
+
+	Vars.selected.target = undefined;
+	Vars.selected.onKeyDown = undefined;
+
+	Vars.renderScheme();
 });
 
 

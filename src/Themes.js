@@ -39,7 +39,9 @@ const Themes = {
     	funcColor: "#050010",
     	funcAccent: "#1C0062",
 
-		powerSize: .25,
+    	selectColor: "#da00ff",
+
+		powerSize: .5,
 		glow: true,
 		powerBorderSize: 0,
 
@@ -57,7 +59,12 @@ const Themes = {
     	funcColor: "#fff",
     	funcAccent: "#D2D2D2",
 
+    	selectColor: "#da00ff",
+
+    	frameBorderColor: "#000",
     	frameBackground: "#9E9E9E",
+    	frameHeadSize: "20px",
+    	frameHeadColor: "#1B88E7",
 
 		powerSize: .75,
 		glow: false,
@@ -76,6 +83,8 @@ const Themes = {
     	labelColor: "#fff",
     	funcColor: "#545454",
     	funcAccent: "#878787",
+
+    	selectColor: "#da00ff",
 
 		powerSize: .75,
 		glow: false,

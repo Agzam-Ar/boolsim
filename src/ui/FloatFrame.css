@@ -2,15 +2,33 @@
 
 
 .floatframe {
-	top: 0;
-	left: 0;
+/*	top: 0;*/
+/*	left: 0;*/
 	position: fixed;
 /*	z-index: 10;*/
 
 	background: #00000077;
 
-	border: .1em var(--power-border-color) #00000077;
+/*	border: .1em var(--power-border-color) #f00;*/
+	border: .1em #f00 solid;
 
-	box-shadow: 0 0 1em #00000077;
+	box-shadow: 0 0 0 .1em #f00 inset;
+
+	background: var(--frame-border-color);
+
+	cursor: n-resize;
+	border: 2px solid transparent;
 }
 
+.floatframe > .content-box {
+	cursor: auto;
+/*	margin-top: var(--frame-head-size);*/
+	background: var(--frame-background);
+/*	box-shadow: 0 0 0 .1em #ff0 inset;*/
+}
+
+.floatframe > .framehead {
+	cursor: pointer;
+	height: var(--frame-head-size);
+	background: var(--frame-head-color);
+}

@@ -90,9 +90,14 @@ class WireElement extends React.Component {
 
 		let pfromActive = (pfrom != undefined && pfrom.active);
 		let glow = pfromActive && Themes.theme.glow;
+
+		let selected = Vars.selected.target == this.link;
 		let border = Themes.theme.powerBorderSize * Themes.theme.powerSize;
+		if(selected && border <= 0) {
+			border = .2  * Themes.theme.powerSize;
+		}
 		
-        return (<g class="no-events" stroke={pfromActive ? "#ff00aa" : "var(--unactive)"}>
+        return (<g stroke={pfromActive ? "#ff00aa" : "var(--unactive)"}>
         	<defs>
 				<linearGradient id={gradientName} spreadMethod="pad" gradientUnits="userSpaceOnUse" x1={x1} y1={y1} x2={x2} y2={y2}>
 					<stop offset="0%" stopColor="var(--power100)" stopOpacity="1"></stop>
@@ -100,11 +105,23 @@ class WireElement extends React.Component {
 					<stop offset="100%" stopColor="var(--power100)" stopOpacity="1"></stop>
 				</linearGradient>
         	</defs>
-        	<g className={Themes.theme.mixBlend} stroke={pfromActive ? `url(#${gradientName})` : "var(--unactive)"} >
+        	<g fill="none" className={Themes.theme.mixBlend} stroke={pfromActive ? `url(#${gradientName})` : "var(--unactive)"}  onClick={e => {
+        			if(this.link.preset) return;
+					Vars.selected.target = this.link;
+
+					Vars.selected.onKeyDown = e => {
+						if(e.code == 'Delete') {
+							this.link.remove();
+						}
+					};
+					console.log("Down");
+					Vars.renderScheme();
+        		}}>
+        		{selected ? <path strokeWidth={border+1} stroke={Themes.theme.selectColor} d={d}/> : []}
         		{border > 0 ? <path strokeWidth={border} stroke="var(--power-border-color)" d={d}/> : (<g></g>)}
         		<path d={d}/>
-        		{glow ? <path className="bloor1" d={d}/> : (<g></g>)}
-        		{glow ? <path className="bloor2" d={d}/> : (<g></g>)}
+        		{glow ? <path className="bloor1 no-events" d={d}/> : (<g></g>)}
+        		{glow ? <path className="bloor2 no-events" d={d}/> : (<g></g>)}
         	</g>
         </g>);
     }

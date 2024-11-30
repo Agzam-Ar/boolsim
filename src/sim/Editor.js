@@ -27,16 +27,18 @@ function Editor() {
 	let ls = Vars.getLinks();
 	for (let key of Object.keys(bs)) {
 		let b = bs[key];
+		if(b == undefined) continue;
 		let eBlock = <BlockElement key={`block${b.id}`} block={b} />;
 		if(b.overlay) eBlocksOverlay.push(eBlock);
-		else eBlocks.push(eBlock); // uid={key} x={b.x} y={b.y} name={b.name} angle={b.angle == undefined ? 1 : b.angle}
+		else eBlocks.push(eBlock);
 	}
 
 	let eWires = [];
 	let eWiresOverlay = [<WireElement key={"preset"} link={Vars.wirePreset()}/>];
 
 	for (let key of Object.keys(ls)) {
-		eWires.push(<WireElement key={key} link={ls[key]}/>);//<path stroke={pfrom.active ? "#fff" : "#333"} key={`wire${link.from}to${link.to}`} d={`M${pfrom.x},${pfrom.y} L${pto.x},${pto.y}`}/>);
+		if(ls[key] == undefined) continue;
+		eWires.push(<WireElement key={key} link={ls[key]}/>);
 	}
 
 
@@ -89,7 +91,7 @@ function Editor() {
 		</svg>
 
 		<div>
-			<FloatFrame content={() => {
+			<FloatFrame frame={Vars.frame("blocks-pattle")} content={() => {
 				let eBlocks = [];
 				let bs = Vars.getBlocksPattle();
 				for (let b of bs) {
