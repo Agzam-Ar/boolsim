@@ -12,7 +12,7 @@ function Editor() {
   	const ref = useRef(null);
   	Vars.schemeSvg = () => ref.current;
 
-	Vars.renderScheme = () => {
+	Vars.$renderScheme = () => {
 		setRepaints(() => repaints+1);
 	};
 

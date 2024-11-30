@@ -1,31 +1,98 @@
 
+import Strings from './utils/Strings'
 
 let nextId = 0;
-let blocks = {};
 let blocksPattle = [];
 
-let links = [];
+let history = [];
+let historyIndex = -1;
 
 let frames = {};
 
 
+let state = {
+
+	blocks: {},
+	links: {},
+
+};
+
+
+const propsCount = (obj) => {
+	let count = 0;
+	for (let o of Object.values(obj)) {
+		if(o != undefined) count++;
+	}
+	return count;
+};
+
+const encodeState = (state, props={version:1}) => {
+	let encoded = "";
+	encoded += Strings.encodeNumber(propsCount(state.blocks));
+	encoded += Strings.encodeNumber(propsCount(state.links));
+
+	for (let block of Object.values(state.blocks)) {
+		if(block == undefined) continue;
+		encoded += block.encode(props);
+	}
+	
+	return encoded;
+}
+
+
+const addToHistory = () => {
+	historyIndex++;
+	let copy = state;//JSON.parse(JSON.stringify(state));
+
+	if(historyIndex < history.length) {
+		history[historyIndex] = copy;
+	} else {
+		history.push(copy);
+	}
+	console.log(history);
+}
+
 let wirePreset;
+
+const getLocalStorageItem = (key, def) => {
+	let item = localStorage.getItem(key);
+	if(item == null) return def;
+	return typeof(def) == 'number' ? parseFloat(item) : item;
+};
+
 
 let Vars = {
 	tilesize: 10,
 	nodesize: .3,
-	camera: {x:0, y:0, width: window.innerWidth, height: window.innerHeight, scale: 1/10},
+	camera: {x:getLocalStorageItem('camera.x', 0), y:getLocalStorageItem('camera.y', 0), width: window.innerWidth, height: window.innerHeight, scale: getLocalStorageItem('camera.scale', 1/10)},
 	mouse: {draggBlock: undefined, draggStart: undefined},
 	selected: {},
-	getBlocks: () => blocks,
-	getLinks: () => links,
+	getHistory: () => history,
+	getHistoryIndex: () => historyIndex,
+	getHistoryLastState: () => {
+		return history[historyIndex];
+	},
+	getState: () => state,
+	getBlocks: () => state.blocks,
+	getLinks: () => state.links,
 	wirePreset: () => wirePreset,
 
 	getBlocksPattle: () => blocksPattle,
-	renderScheme: () => {},
+	$renderScheme: () => {},
+	renderScheme: () => {
+		if(JSON.stringify(Vars.getHistoryLastState()) != JSON.stringify(Vars.getState())) { // Vars.getHistoryLastState() != undefined && state != undefined) {
+			// let lstate = Vars.getHistoryLastState();
+			// console.log(propsCount(lstate.links), propsCount(state.links));
+			// if(propsCount(lstate.links) != propsCount(state.links)) {
+				addToHistory();
+			// }
+
+		}
+		Vars.$renderScheme();
+	},
 
 	updateBlocks: () => {
-		for (let b of Object.values(blocks)) {
+		for (let b of Object.values(Vars.getBlocks())) {
 			if(b != undefined) b.update();
 		}
 	},
@@ -64,10 +131,17 @@ class Frame {
 		}
 	}
 	
+	hasPoint(p) {
+		if(p.x < this.box.x) return false;
+		if(p.y < this.box.y) return false;
+		if(p.x > this.box.x + this.box.w) return false;
+		if(p.y > this.box.y + this.box.h) return false;
+		return true;
+	}
 }
 
 
-frames["blocks-pattle"] = new Frame({x:0,y:0, w:window.innerHeight*3/20, h:window.innerHeight});
+frames["blocks-pattle"] = new Frame({x:10,y:0, w:window.innerHeight*3/20, h:window.innerHeight});
 
 
 window["Vars"] = Vars;
@@ -90,7 +164,7 @@ class Block {
 			}
 		} else {
 			this.id = nextId++;
-			if(props.preset != true) blocks[this.id] = this;
+			if(props.preset != true) Vars.getBlocks()[this.id] = this;
 		}
 		this.box 		= {x:0,y:0,w:Vars.tilesize,h:Vars.tilesize};
 	    this.type 		= 'switch';
@@ -144,11 +218,18 @@ class Block {
 		this.updatePorts();
 	}
 
+	encode() {
+		let encoded = "";
+		encoded += Strings.encodeNumber(this.box.x/Vars.tilesize);
+		encoded += Strings.encodeNumber(this.box.y/Vars.tilesize);
+
+		return encoded;
+	}
+
 	remove() {
-		blocks[this.id] = undefined;
+		Vars.getBlocks()[this.id] = undefined;
 			Vars.renderScheme();
 	}
-	
 
 	render() {
 		if(this.elementListener != undefined) this.elementListener();
@@ -307,15 +388,15 @@ class Wire {
 		if(this.preset) return;
 
 		this.id = `wire${this.from}p${this.fromPort}to${this.to}p${this.toPort}`; 
-		links[this.id] = this;
-		blocks[this.from].listeners['linkUpdateTo' + this.id] = () => {this.update()};
+		Vars.getLinks()[this.id] = this;
+		Vars.getBlocks()[this.from].listeners['linkUpdateTo' + this.id] = () => {this.update()};
 	}
 
 	update() {
 		if(this.preset) return;
 		
-		let from  = blocks[this.from];
-		let to    = blocks[this.to];
+		let from  = Vars.getBlocks()[this.from];
+		let to    = Vars.getBlocks()[this.to];
 		if(to == undefined || from == undefined) {
 			this.remove();
 			return;
@@ -327,20 +408,35 @@ class Wire {
 	}
 
 	remove() {
-		links[this.id] = undefined;
-		blocks[this.from].listeners['linkUpdateTo' + this.id] = undefined;
+		Vars.getLinks()[this.id] = undefined;
+		Vars.getBlocks()[this.from].listeners['linkUpdateTo' + this.id] = undefined;
 		Vars.renderScheme();
 	}
 
 }
 
-window.addEventListener('keydown', e => {
 
+window.addEventListener('keydown', e => {
 	if(Vars.selected.onKeyDown != undefined) Vars.selected.onKeyDown(e);
 	
-	
+	if(e.code == 'KeyZ') {
+		historyIndex--;
+		if(historyIndex < 0) historyIndex = 0;
+		state = history[historyIndex];
+		console.log(historyIndex);
+		Vars.$renderScheme();
+	}
+	if(e.code == 'KeyS') {
+		console.log(encodeState(Vars.getState()));
+		e.preventDefault();
+	}
 });
 
+window.addEventListener('unload', e => {
+	localStorage.setItem('camera.x', Vars.camera.x);
+	localStorage.setItem('camera.y', Vars.camera.y);
+	localStorage.setItem('camera.scale', Vars.camera.scale);
+});
 
 window.addEventListener('click', e => {
 });
@@ -395,6 +491,14 @@ window.addEventListener('mouseup', e => {
 		Vars.mouse.draggBlock.overlay = false;
 		Vars.mouse.draggBlock.box.x = x;
 		Vars.mouse.draggBlock.box.y = y;
+
+		for (let f of Object.values(frames)) {
+			if(f.hasPoint(Vars.mouse.client)) {
+				Vars.mouse.draggBlock.remove();
+				break;
+			}
+		}
+
 		Vars.renderScheme();
 		Vars.mouse.draggBlock = undefined;
 		Vars.mouse.draggStart = undefined;
@@ -491,6 +595,8 @@ new Wire({from:$and1.id, to:$or.id, fromPort:0, toPort:1});
 new Wire({from:$and2.id, to:$or.id, fromPort:0, toPort:2});
 new Wire({from:$and3.id, to:$or.id, fromPort:0, toPort:0});
 
+
+addToHistory();
 
 // new Block({type: "switch", x:0, y:3, name: "x2", angle: 0});
 
