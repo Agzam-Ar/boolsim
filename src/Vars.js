@@ -28,15 +28,67 @@ const propsCount = (obj) => {
 
 const encodeState = (state, props={version:1}) => {
 	let encoded = "";
+	encoded += Strings.encodeNumber(props.version);
 	encoded += Strings.encodeNumber(propsCount(state.blocks));
 	encoded += Strings.encodeNumber(propsCount(state.links));
+
+	let shiftX = Infinity;
+	let shiftY = Infinity;
+	for (let block of Object.values(state.blocks)) {
+		if(block == undefined) continue;
+		shiftX = Math.min(shiftX, block.box.x);
+		shiftY = Math.min(shiftY, block.box.y);
+	}
+	props.shiftX = shiftX == Infinity ? 0 : -shiftX;
+	props.shiftY = shiftY == Infinity ? 0 : -shiftY;
 
 	for (let block of Object.values(state.blocks)) {
 		if(block == undefined) continue;
 		encoded += block.encode(props);
 	}
-	
 	return encoded;
+}
+
+const decodeState = (code, props={index:0}) => {
+	let version = Strings.decodeNumber(code, props);
+	console.log("decoding ver", version);
+	let decoded = {
+		blocks: {},
+		links: {},
+	};
+	let blocksCount = Strings.decodeNumber(code, props);
+	let linksCount = Strings.decodeNumber(code, props);
+	console.log("blocksCount", blocksCount);
+	console.log("linksCount", linksCount);
+
+	for (var i = 0; i < blocksCount; i++) {
+		let b = Block.decode(code, props);
+		// console.log("block", b);
+		decoded.blocks[b.id] = b;
+		// console.log(`Seting block #${block.id}`, decoded.blocks);
+	}
+	console.log("Decoded result: ", decoded);
+
+
+	// encoded += Strings.encodeNumber(props.version);
+	// encoded += Strings.encodeNumber(propsCount(state.blocks));
+	// encoded += Strings.encodeNumber(propsCount(state.links));
+
+	// let shiftX = Infinity;
+	// let shiftY = Infinity;
+	// for (let block of Object.values(state.blocks)) {
+	// 	if(block == undefined) continue;
+	// 	shiftX = Math.min(shiftX, block.box.x);
+	// 	shiftY = Math.min(shiftY, block.box.y);
+	// }
+	// props.shiftX = shiftX == Infinity ? 0 : -shiftX;
+	// props.shiftY = shiftY == Infinity ? 0 : -shiftY;
+
+	// for (let block of Object.values(state.blocks)) {
+	// 	if(block == undefined) continue;
+	// 	encoded += block.encode(props);
+	// }
+	return decoded;
 }
 
 
@@ -62,6 +114,12 @@ const getLocalStorageItem = (key, def) => {
 
 
 let Vars = {
+	blockTypes: {
+		switch: 	0,
+		and: 		1,
+		or: 		2,
+		not: 		3,
+	},
 	tilesize: 10,
 	nodesize: .3,
 	camera: {x:getLocalStorageItem('camera.x', 0), y:getLocalStorageItem('camera.y', 0), width: window.innerWidth, height: window.innerHeight, scale: getLocalStorageItem('camera.scale', 1/10)},
@@ -96,7 +154,6 @@ let Vars = {
 			if(b != undefined) b.update();
 		}
 	},
-
 
 	toSvgPoint(evt) {
 		if(Vars.schemeSvg == undefined) return undefined;
@@ -167,7 +224,7 @@ class Block {
 			if(props.preset != true) Vars.getBlocks()[this.id] = this;
 		}
 		this.box 		= {x:0,y:0,w:Vars.tilesize,h:Vars.tilesize};
-	    this.type 		= 'switch';
+	    this.type 		= Vars.blockTypes.switch;
 	    this.active 	= false;
 	    this.outputs = 1;
 	    this.inputs  = 1;
@@ -178,11 +235,11 @@ class Block {
 	    }
 
 	    let type = props.type;
-		if(type == 'switch') {
+		if(type == Vars.blockTypes.switch) {
 	    	this.outputs = 1;
 	    	this.inputs  = 0;
 		}
-		if(type == 'or' || type == 'and') {
+		if(type == Vars.blockTypes.or || type == Vars.blockTypes.and) {
 	    	this.outputs = 1;
 	    	this.inputs  = 2;
 		}
@@ -218,17 +275,41 @@ class Block {
 		this.updatePorts();
 	}
 
-	encode() {
-		let encoded = "";
-		encoded += Strings.encodeNumber(this.box.x/Vars.tilesize);
-		encoded += Strings.encodeNumber(this.box.y/Vars.tilesize);
+	static decode(code, props) {
+		let block = {x:0,y:0};
+		let propcode = "";
+		
+		block.id = Strings.decodeNumber(code, props);
+		block.type = Strings.decodeNumber(code, props);
+		block.x = Strings.decodeNumber(code, props);
+		block.y = Strings.decodeNumber(code, props);
+		console.log("reading ", block.x, block.y);
+		block.angle = Strings.decodeNumber(code, props);
 
+		let nameLength = Strings.decodeNumber(code, props);
+		block.name = code.substring(props.index, props.index + nameLength);
+		props.index += nameLength;
+
+		return new Block(block);
+	}
+
+	encode(props) {
+		let encoded = "";
+		encoded += Strings.encodeNumber(this.id);
+		encoded += Strings.encodeNumber(this.type);
+		encoded += Strings.encodeNumber((this.box.x+props.shiftX)/Vars.tilesize);
+		encoded += Strings.encodeNumber((this.box.y+props.shiftY)/Vars.tilesize);
+		console.log('wiriting', (this.box.y+props.shiftX)/Vars.tilesize, (this.box.y+props.shiftY)/Vars.tilesize);
+		encoded += Strings.encodeNumber(this.angle);
+		let encodeName = encodeURIComponent(this.name);
+		encoded += Strings.encodeNumber(encodeName.length);
+		encoded += encodeName;
 		return encoded;
 	}
 
 	remove() {
 		Vars.getBlocks()[this.id] = undefined;
-			Vars.renderScheme();
+		Vars.renderScheme();
 	}
 
 	render() {
@@ -242,7 +323,6 @@ class Block {
 			if(l != undefined) l();
 		}
 	}
-
 
 	updatePorts() {
 		for (var i = 0; i < this.oPorts.length; i++) {
@@ -265,12 +345,12 @@ class Block {
 		}
 
 
-		if(this.type == 'switch') {
+		if(this.type == Vars.blockTypes.switch) {
 			for (var i = 0; i < this.oPorts.length; i++) {
 				this.oPorts[i].active = this.active;
 			}
 		}
-		if(this.type == 'or') {
+		if(this.type == Vars.blockTypes.or) {
 			this.active = false;
 			for (var i = 0; i < this.iPorts.length; i++) {
 				if(!this.iPorts[i].active) continue;
@@ -281,7 +361,7 @@ class Block {
 				this.oPorts[i].active = this.active;
 			}
 		}
-		if(this.type == 'and') {
+		if(this.type == Vars.blockTypes.and) {
 			this.active = true;
 			for (var i = 0; i < this.iPorts.length; i++) {
 				if(this.iPorts[i].active) continue;
@@ -292,7 +372,7 @@ class Block {
 				this.oPorts[i].active = this.active;
 			}
 		}
-		if(this.type == 'not' && this.iPorts.length > 0) {
+		if(this.type == Vars.blockTypes.not && this.iPorts.length > 0) {
 			this.active = !this.iPorts[0].active;
 			for (var i = 0; i < this.oPorts.length; i++) {
 				this.oPorts[i].active = this.active;
@@ -309,19 +389,19 @@ class Block {
 		let su = Math.min(box.w, box.h)*.3;
 		let sv = 0;
 
-		if(this.type == 'switch') {
+		if(this.type == Vars.blockTypes.switch) {
 			u = 10;
 			v = 0;
 			su = Math.min(box.w, box.h)*.3;
 			sv = 0;
 		}
-		if(this.type == 'not') {
+		if(this.type == Vars.blockTypes.not) {
 			u = 10;
 			v = 0;
 			su = Math.min(box.w, box.h)*.5+2;
 			sv = 0;
 		}
-		if(this.type == 'or' || this.type == 'and') {
+		if(this.type == Vars.blockTypes.or || this.type == Vars.blockTypes.and) {
 			u = 10;
 			v = 0;
 			su = Math.min(box.w, box.h)*.5;
@@ -343,18 +423,18 @@ class Block {
 
 		let iDelta = this.inputs%2 == 1 ? Math.floor(index - this.inputs/2+1) : (index < this.inputs/2 ? index+1 : -index-this.inputs/2+1);
 
-		if(this.type == 'not') {
+		if(this.type == Vars.blockTypes.not) {
 			u = -10;
 			v = 0;
 			su = -Math.min(box.w, box.h)*.5;
 			sv = 0;
 		}
-		if(this.type == 'or' || this.type == 'and') {
+		if(this.type == Vars.blockTypes.or || this.type == Vars.blockTypes.and) {
 			u = -10;
 			v = -iDelta*10;
 			su = -Math.min(box.w, box.h)*.3+.5;
 		}
-		if(this.type == 'and') {
+		if(this.type == Vars.blockTypes.and) {
 			su = -Math.min(box.w, box.h)*.5;
 		}
 
@@ -418,17 +498,36 @@ class Wire {
 
 window.addEventListener('keydown', e => {
 	if(Vars.selected.onKeyDown != undefined) Vars.selected.onKeyDown(e);
-	
-	if(e.code == 'KeyZ') {
-		historyIndex--;
-		if(historyIndex < 0) historyIndex = 0;
-		state = history[historyIndex];
-		console.log(historyIndex);
-		Vars.$renderScheme();
-	}
-	if(e.code == 'KeyS') {
-		console.log(encodeState(Vars.getState()));
-		e.preventDefault();
+	if(e.ctrlKey) {
+		if(e.code == 'KeyZ') {
+			historyIndex--;
+			if(historyIndex < 0) historyIndex = 0;
+			state = history[historyIndex];
+			console.log(historyIndex);
+			Vars.$renderScheme();
+		}
+		if(e.code == 'KeyS') {
+			let encoded = encodeState(Vars.getState());
+			window.location.hash = '#' + encoded;
+			console.log(encoded);
+			e.preventDefault();
+		}
+		if(e.code == 'KeyO') {
+			try {
+				let decoded = decodeState(window.location.hash.substring(1));
+				console.log("Decoded state", decoded);
+				if(decoded != undefined) {
+					state = decoded;
+					Vars.$renderScheme();
+					console.log("Successfully opened!");
+				} else {
+					console.error("State not decoded");
+				}
+			} catch (e) {
+				console.log(e);
+			}
+			e.preventDefault();
+		}
 	}
 });
 
@@ -562,38 +661,59 @@ document.getElementById('root').addEventListener('wheel', e => {
 	e.preventDefault();
 }, true);
 
-new Block({preset: true, type: "switch", name: "Switch", angle: 0});
-new Block({preset: true, type: "not", 	 name: "Not", angle: 0});
-new Block({preset: true, type: "and", 	 name: "And", angle: 0});
-new Block({preset: true, type: "or", 	 name: "Or", angle: 0});
+new Block({preset: true, type: Vars.blockTypes.switch, name: "Switch", angle: 0});
+new Block({preset: true, type: Vars.blockTypes.not, 	 name: "Not", angle: 0});
+new Block({preset: true, type: Vars.blockTypes.and, 	 name: "And", angle: 0});
+new Block({preset: true, type: Vars.blockTypes.or, 	 name: "Or", angle: 0});
 wirePreset = new Wire({preset: true});
 
 // new Block({type: "switch", x:0, y:0,		name: "00",  angle: 0});
 
-let $a  = new Block({type: "switch", x:-5, y:-2,  	name: "X1",  angle: 0});
-let $b  = new Block({type: "switch", x:-5, y:0,		name: "X2",  angle: 0});
-let $c  = new Block({type: "switch", x:-5, y:2,		name: "X3",  angle: 0});
+let needExample = true;
 
-let $notb = new Block({type: "not",  x:-2, y:0, name: "not", angle: 0});
-new Wire({from:$b.id, to:$notb.id, fromPort:0, toPort:0});
+if(window.location.hash.length > 1) {
+	// needExample = false;
+	// try {
+	// 	let decoded = decodeState(window.location.hash.substring(1));
+	// 	console.log("Decoded state", decoded);
+	// 	if(decoded == undefined) {
+	// 		needExample = true;
+	// 	} else {
+	// 		state = decoded;
+	// 	}
+	// } catch (e) {
+	// 	console.log(e);
+	// 	needExample = true;
+	// }
+}
 
-let $and1 = new Block({type: "and",    x:1, y:1, name: "and", angle: 0});
-new Wire({from:$notb.id, to:$and1.id, fromPort:0, toPort:0});
-new Wire({from:$c.id,    to:$and1.id, fromPort:0, toPort:1});
 
-let $and2 = new Block({type: "and",    x:4, y:-1, name: "and", angle: 0});
-new Wire({from:$a.id, 	 to:$and2.id, fromPort:0, toPort:0});
-new Wire({from:$notb.id, to:$and2.id, fromPort:0, toPort:1});
-
-
-let $and3 = new Block({type: "and",    x:2, y:3, name: "and", angle: 0});
-new Wire({from:$a.id, to:$and3.id, fromPort:0, toPort:0});
-new Wire({from:$c.id, to:$and3.id, fromPort:0, toPort:1});
-
-let $or  = new Block({type: "or", 	  x:8, y:1, name: "or",  angle: 0, inputs: 3});
-new Wire({from:$and1.id, to:$or.id, fromPort:0, toPort:1});
-new Wire({from:$and2.id, to:$or.id, fromPort:0, toPort:2});
-new Wire({from:$and3.id, to:$or.id, fromPort:0, toPort:0});
+if(needExample) {
+	let $a  = new Block({type: Vars.blockTypes.switch, x:-5, y:-2,  	name: "X1",  angle: 0});
+	let $b  = new Block({type: Vars.blockTypes.switch, x:-5, y:0,		name: "X2",  angle: 0});
+	let $c  = new Block({type: Vars.blockTypes.switch, x:-5, y:2,		name: "X3",  angle: 0});
+	
+	let $notb = new Block({type: Vars.blockTypes.not,  x:-2, y:0, name: "not", angle: 0});
+	new Wire({from:$b.id, to:$notb.id, fromPort:0, toPort:0});
+	
+	let $and1 = new Block({type: Vars.blockTypes.and,    x:1, y:1, name: "and", angle: 0});
+	new Wire({from:$notb.id, to:$and1.id, fromPort:0, toPort:0});
+	new Wire({from:$c.id,    to:$and1.id, fromPort:0, toPort:1});
+	
+	let $and2 = new Block({type: Vars.blockTypes.and,    x:4, y:-1, name: "and", angle: 0});
+	new Wire({from:$a.id, 	 to:$and2.id, fromPort:0, toPort:0});
+	new Wire({from:$notb.id, to:$and2.id, fromPort:0, toPort:1});
+	
+	
+	let $and3 = new Block({type: Vars.blockTypes.and,    x:2, y:3, name: "and", angle: 0});
+	new Wire({from:$a.id, to:$and3.id, fromPort:0, toPort:0});
+	new Wire({from:$c.id, to:$and3.id, fromPort:0, toPort:1});
+	
+	let $or  = new Block({type: Vars.blockTypes.or, 	  x:8, y:1, name: "or",  angle: 0, inputs: 3});
+	new Wire({from:$and1.id, to:$or.id, fromPort:0, toPort:1});
+	new Wire({from:$and2.id, to:$or.id, fromPort:0, toPort:2});
+	new Wire({from:$and3.id, to:$or.id, fromPort:0, toPort:0});
+}
 
 
 addToHistory();

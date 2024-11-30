@@ -28,7 +28,7 @@ function Editor() {
 	for (let key of Object.keys(bs)) {
 		let b = bs[key];
 		if(b == undefined) continue;
-		let eBlock = <BlockElement key={`block${b.id}`} block={b} />;
+		let eBlock = <BlockElement key={`block${b.id}`} id={b.id} />;
 		if(b.overlay) eBlocksOverlay.push(eBlock);
 		else eBlocks.push(eBlock);
 	}
