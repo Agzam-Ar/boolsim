@@ -480,7 +480,13 @@ class Wire {
 
 		this.id = `wire${this.from}p${this.fromPort}to${this.to}p${this.toPort}`; 
 		Vars.getLinks()[this.id] = this;
-		this.blocks[this.from].listeners['linkUpdateTo' + this.id] = () => {this.update()};
+
+		if(this.blocks[this.from] != undefined) {
+			this.blocks[this.from].listeners['linkUpdateTo' + this.id] = () => {this.update()};
+		} else {
+			console.warn("block is undefined");
+		}
+		
 	}
 
 	update() {
