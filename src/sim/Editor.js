@@ -34,11 +34,11 @@ function Editor() {
 	}
 
 	let eWires = [];
-	let eWiresOverlay = [<WireElement key={"preset"} link={Vars.wirePreset()}/>];
+	let eWiresOverlay = [<WireElement key={"preset"} id={"preset"}/>];
 
 	for (let key of Object.keys(ls)) {
 		if(ls[key] == undefined) continue;
-		eWires.push(<WireElement key={key} link={ls[key]}/>);
+		eWires.push(<WireElement key={key} id={key}/>); // link={ls[key]}
 	}
 
 

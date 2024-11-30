@@ -6,16 +6,11 @@ class WireElement extends React.Component {
     
 	constructor(props) {
 		super(props);
-		let bs = Vars.getBlocks();
-		this.link = props.link;
-		let link = this.link;
-		this.from = bs[link.from];
-		this.to = bs[link.to];
+		
+		this.id = props.id;
 		
 		this.state = {};
 
-	    const listener = () => {this.repaint()};
-		if(this.from != undefined) this.from.listeners["linkTo" + link.to] = listener;
 	}
 
 
@@ -26,14 +21,15 @@ class WireElement extends React.Component {
 	}
 
     render() {
-		let link = this.link;
+    	console.log(this.id);
+		let link = this.id == 'preset' ? Vars.wirePreset() : Vars.getLinks()[this.id];
 		let bs = Vars.getBlocks();
 
-		this.from = bs[link.from];
-		this.to = bs[link.to];
+		let from = bs[link.from];
+		let to = bs[link.to];
 
-		let from = this.from;
-		let to = this.to;
+	    const listener = () => {this.repaint()};
+		if(from != undefined) from.listeners["linkTo" + link.to] = listener;
 
 		// if(this.link.preset) {
 		// 	console.log('Wire: ', link.from, link.fromPort);
@@ -63,7 +59,7 @@ class WireElement extends React.Component {
 		// x2 -= cos*Vars.nodesize;
 		// y2 -= sin*Vars.nodesize;
 
-		let gradientName = `wire-gradient-${this.link.from}-${this.link.to}`;
+		let gradientName = `wire-gradient-${link.from}-${link.to}`;
 		
 
 		let cx = (x1+x2)/2;
@@ -91,7 +87,7 @@ class WireElement extends React.Component {
 		let pfromActive = (pfrom != undefined && pfrom.active);
 		let glow = pfromActive && Themes.theme.glow;
 
-		let selected = Vars.selected.target == this.link;
+		let selected = Vars.selected.target == link;
 		let border = Themes.theme.powerBorderSize * Themes.theme.powerSize;
 		if(selected && border <= 0) {
 			border = .2  * Themes.theme.powerSize;
@@ -106,12 +102,12 @@ class WireElement extends React.Component {
 				</linearGradient>
         	</defs>
         	<g fill="none" className={Themes.theme.mixBlend} stroke={pfromActive ? `url(#${gradientName})` : "var(--unactive)"}  onClick={e => {
-        			if(this.link.preset) return;
-					Vars.selected.target = this.link;
+        			if(link.preset) return;
+					Vars.selected.target = link;
 
 					Vars.selected.onKeyDown = e => {
 						if(e.code == 'Delete') {
-							this.link.remove();
+							link.remove();
 						}
 					};
 					console.log("Down");

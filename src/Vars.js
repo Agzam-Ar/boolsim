@@ -46,6 +46,12 @@ const encodeState = (state, props={version:1}) => {
 		if(block == undefined) continue;
 		encoded += block.encode(props);
 	}
+
+	for (let link of Object.values(state.links)) {
+		if(link == undefined) continue;
+		encoded += link.encode(props);
+	}
+
 	return encoded;
 }
 
@@ -56,16 +62,23 @@ const decodeState = (code, props={index:0}) => {
 		blocks: {},
 		links: {},
 	};
+	props.state = decoded;
 	let blocksCount = Strings.decodeNumber(code, props);
 	let linksCount = Strings.decodeNumber(code, props);
+
+	
+	
 	console.log("blocksCount", blocksCount);
 	console.log("linksCount", linksCount);
 
 	for (var i = 0; i < blocksCount; i++) {
 		let b = Block.decode(code, props);
-		// console.log("block", b);
 		decoded.blocks[b.id] = b;
-		// console.log(`Seting block #${block.id}`, decoded.blocks);
+	}
+
+	for (var i = 0; i < linksCount; i++) {
+		let w = Wire.decode(code, props);
+		decoded.links[w.id] = w;
 	}
 	console.log("Decoded result: ", decoded);
 
@@ -144,7 +157,7 @@ let Vars = {
 			// if(propsCount(lstate.links) != propsCount(state.links)) {
 				addToHistory();
 			// }
-
+			
 		}
 		Vars.$renderScheme();
 	},
@@ -278,18 +291,16 @@ class Block {
 	static decode(code, props) {
 		let block = {x:0,y:0};
 		let propcode = "";
-		
 		block.id = Strings.decodeNumber(code, props);
 		block.type = Strings.decodeNumber(code, props);
 		block.x = Strings.decodeNumber(code, props);
 		block.y = Strings.decodeNumber(code, props);
-		console.log("reading ", block.x, block.y);
 		block.angle = Strings.decodeNumber(code, props);
-
+		block.inputs = Strings.decodeNumber(code, props);
+		block.outputs = Strings.decodeNumber(code, props);
 		let nameLength = Strings.decodeNumber(code, props);
 		block.name = code.substring(props.index, props.index + nameLength);
 		props.index += nameLength;
-
 		return new Block(block);
 	}
 
@@ -299,13 +310,47 @@ class Block {
 		encoded += Strings.encodeNumber(this.type);
 		encoded += Strings.encodeNumber((this.box.x+props.shiftX)/Vars.tilesize);
 		encoded += Strings.encodeNumber((this.box.y+props.shiftY)/Vars.tilesize);
-		console.log('wiriting', (this.box.y+props.shiftX)/Vars.tilesize, (this.box.y+props.shiftY)/Vars.tilesize);
 		encoded += Strings.encodeNumber(this.angle);
+		encoded += Strings.encodeNumber(this.inputs);
+		encoded += Strings.encodeNumber(this.outputs);
 		let encodeName = encodeURIComponent(this.name);
 		encoded += Strings.encodeNumber(encodeName.length);
 		encoded += encodeName;
 		return encoded;
 	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 	remove() {
 		Vars.getBlocks()[this.id] = undefined;
@@ -459,6 +504,7 @@ class Block {
 class Wire {
 
 	constructor(props) {
+		this.blocks = Vars.getBlocks();
 		for(let k of Object.keys(props)) {
 			if(k == 'x' || k == 'y') {
 				this.box[k] = props[k]*Vars.tilesize;
@@ -469,7 +515,7 @@ class Wire {
 
 		this.id = `wire${this.from}p${this.fromPort}to${this.to}p${this.toPort}`; 
 		Vars.getLinks()[this.id] = this;
-		Vars.getBlocks()[this.from].listeners['linkUpdateTo' + this.id] = () => {this.update()};
+		this.blocks[this.from].listeners['linkUpdateTo' + this.id] = () => {this.update()};
 	}
 
 	update() {
@@ -492,6 +538,69 @@ class Wire {
 		Vars.getBlocks()[this.from].listeners['linkUpdateTo' + this.id] = undefined;
 		Vars.renderScheme();
 	}
+
+
+
+
+
+
+
+
+	static decode(code, props) {
+		let wire = {blocks: props.state.blocks};
+		wire.from = Strings.decodeNumber(code, props);
+		wire.to = Strings.decodeNumber(code, props);
+		wire.fromPort = Strings.decodeNumber(code, props);
+		wire.toPort = Strings.decodeNumber(code, props);
+		return new Wire(wire);
+	}
+
+
+	encode(props) {
+		let encoded = "";
+		encoded += Strings.encodeNumber(this.from);
+		encoded += Strings.encodeNumber(this.to);
+		encoded += Strings.encodeNumber(this.fromPort);
+		encoded += Strings.encodeNumber(this.toPort);
+		return encoded;
+	}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 }
 
