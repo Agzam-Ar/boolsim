@@ -120,6 +120,7 @@ let wirePreset;
 const getLocalStorageItem = (key, def) => {
 	let item = localStorage.getItem(key);
 	if(item == null) return def;
+	if(isNaN(item)) return def;
 	return typeof(def) == 'number' ? parseFloat(item) : item;
 };
 
@@ -192,9 +193,9 @@ let Vars = {
 class Frame {
 	
 	constructor(props) {
-		this.box 		= {x:0,y:0,w:Vars.tilesize,h:Vars.tilesize};
+		this.box 		= {x:0,y:0,w:Vars.tilesize,h:Vars.tilesize, minw:0, minh:0};
 		for(let k of Object.keys(props)) {
-			if(k == 'x' || k == 'y' || k == 'w' || k == 'h') this.box[k] = props[k];
+			if(k == 'x' || k == 'y' || k == 'w' || k == 'h' || k == 'minw' || k == 'minh') this.box[k] = props[k];
 			else this[k] = props[k];
 		}
 	}
@@ -209,7 +210,12 @@ class Frame {
 }
 
 
-frames["blocks-pattle"] = new Frame({x:0,y:0, w:window.innerHeight*3/20, h:window.innerHeight*10/20});
+frames["blocks-pattle"] = new Frame({
+	x:getLocalStorageItem('frame.blocks-pattle.x', 0),
+	y:getLocalStorageItem('frame.blocks-pattle.y', 0), 
+	w:getLocalStorageItem('frame.blocks-pattle.w', window.innerHeight*3/20),
+	h:getLocalStorageItem('frame.blocks-pattle.h', window.innerHeight*10/20), 
+	minw:window.innerHeight*3/40, 	minh:window.innerHeight*10/40});
 
 
 window["Vars"] = Vars;
@@ -572,6 +578,15 @@ window.addEventListener('unload', e => {
 	localStorage.setItem('camera.x', Vars.camera.x);
 	localStorage.setItem('camera.y', Vars.camera.y);
 	localStorage.setItem('camera.scale', Vars.camera.scale);
+
+	for (let fkey of Object.keys(frames)) {
+		let f = Vars.frame(fkey);
+		localStorage.setItem(`frame.${fkey}.x`, f.box.x);
+		localStorage.setItem(`frame.${fkey}.y`, f.box.y);
+		localStorage.setItem(`frame.${fkey}.w`, f.box.w);
+		localStorage.setItem(`frame.${fkey}.h`, f.box.h);
+		
+	}
 });
 
 window.addEventListener('click', e => {
@@ -605,14 +620,6 @@ window.addEventListener('mousemove', e => {
 			Vars.mouse.draggLastPos = pos;
 			Vars.mouse.draggBlock.overlay = true;
 		}
-		if(Vars.mouse.draggType == 'move-frame') {
-			pos = {x: e.clientX, y: e.clientY};
-			let x = Vars.mouse.draggBlockPos.x + (pos.x - Vars.mouse.draggStart.x);
-			let y = Vars.mouse.draggBlockPos.y + (pos.y - Vars.mouse.draggStart.y);
-			Vars.mouse.draggBlock.box.x = Math.min(Math.max(0, x), Vars.camera.width - Vars.mouse.draggBlock.box.w);
-			Vars.mouse.draggBlock.box.y = Math.min(Math.max(0, y), Vars.camera.height - Vars.mouse.draggBlock.box.h);
-			Vars.renderScheme();
-		}
 		if(Vars.mouse.draggType == 'create-wire') { //Vars.mouse.draggBlock != undefined) {
 			// let x = Vars.mouse.draggBlockPos.x + pos.x - Vars.mouse.draggStart.x;
 			// let y = Vars.mouse.draggBlockPos.y + pos.y - Vars.mouse.draggStart.y;    
@@ -622,6 +629,49 @@ window.addEventListener('mousemove', e => {
 			Vars.renderScheme();
 			// Vars.mouse.draggLastPos = pos;
 			// Vars.mouse.draggBlock.overlay = true;
+		}
+		if(Vars.mouse.draggType == 'move-frame') {
+			pos = {x: e.clientX, y: e.clientY};
+			let x = Vars.mouse.draggBlockPos.x + (pos.x - Vars.mouse.draggStart.x);
+			let y = Vars.mouse.draggBlockPos.y + (pos.y - Vars.mouse.draggStart.y);
+			Vars.mouse.draggBlock.box.x = Math.min(Math.max(0, x), Vars.camera.width - Vars.mouse.draggBlock.box.w);
+			Vars.mouse.draggBlock.box.y = Math.min(Math.max(0, y), Vars.camera.height - Vars.mouse.draggBlock.box.h);
+			Vars.renderScheme();
+		}
+		if(Vars.mouse.draggType != undefined) {
+			if(Vars.mouse.draggType.startsWith('resize-frame-')) {
+				let type = Vars.mouse.draggType.substring('resize-frame-'.length);
+				let down = type.indexOf('d') != -1;
+				let top = type.indexOf('t') != -1;
+				let right = type.indexOf('r') != -1;
+				let left = type.indexOf('l') != -1;
+
+				pos = {x: e.clientX, y: e.clientY};
+
+				if(top) {
+					let y = Vars.mouse.draggBlockPos.y + (pos.y - Vars.mouse.draggStart.y);
+					let h = Vars.mouse.draggBlockPos.h - (pos.y - Vars.mouse.draggStart.y);
+					h = Math.max(Vars.mouse.draggBlock.box.minh, h);
+					Vars.mouse.draggBlock.box.h = h;
+					Vars.mouse.draggBlock.box.y = Vars.mouse.draggBlockPos.y + Vars.mouse.draggBlockPos.h - h;
+				}
+				if(down) {
+					let h = Vars.mouse.draggBlockPos.h + (pos.y - Vars.mouse.draggStart.y);
+					Vars.mouse.draggBlock.box.h = Math.max(Vars.mouse.draggBlock.box.minh, h);
+				}
+				if(left) {
+					let x = Vars.mouse.draggBlockPos.x + (pos.x - Vars.mouse.draggStart.x);
+					let w = Vars.mouse.draggBlockPos.w - (pos.x - Vars.mouse.draggStart.x);
+					w = Math.max(Vars.mouse.draggBlock.box.minw, w);
+					Vars.mouse.draggBlock.box.w = w;
+					Vars.mouse.draggBlock.box.x = Vars.mouse.draggBlockPos.x + Vars.mouse.draggBlockPos.w - w;
+				}
+				if(right) {
+					let w = Vars.mouse.draggBlockPos.w + (pos.x - Vars.mouse.draggStart.x);
+					Vars.mouse.draggBlock.box.w = Math.max(Vars.mouse.draggBlock.box.minw, w);
+				}
+				Vars.renderScheme();
+			}
 		}
 	}
 });

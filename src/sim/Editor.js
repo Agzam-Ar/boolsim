@@ -49,7 +49,8 @@ function Editor() {
 
 	let viewBoxW = Vars.camera.width*Vars.camera.scale;
 	let viewBoxH = Vars.camera.height*Vars.camera.scale;
-
+	
+	if(Vars.camera.scale < .5)
 	for (var y = Math.floor(viewBoxY/Vars.tilesize); y <= Math.ceil((viewBoxY+viewBoxH)/Vars.tilesize); y++) {
 		for (var x = Math.floor(viewBoxX/Vars.tilesize); x < Math.ceil((viewBoxX+viewBoxW)/Vars.tilesize); x++) {
 			ePoints.push(<circle key={`x${x}y${y}`} cx={x*Vars.tilesize} cy={y*Vars.tilesize} r="1"/>);
@@ -97,16 +98,10 @@ function Editor() {
 				for (let b of bs) {
 					eBlocks.push(<BlockElement key={`block${b.id}`} block={b} />); // uid={key} x={b.x} y={b.y} name={b.name} angle={b.angle == undefined ? 1 : b.angle}
 				}
-				// let ePoints = [];
-			
-				// for (var y = -10; y < 10; y++) {
-				// 	for (var x = -10; x < 10; x++) {
-				// 		ePoints.push(<circle key={`x${x}y${y}`} cx={x*Vars.tilesize} cy={y*Vars.tilesize} r="1"/>);
-				// 	}
-				// }
+				let frame = Vars.frame("blocks-pattle");
 				let w = 30;
-				let h = 200;
-				let raito = `${w} / ${h}`;
+				let h = 100;
+				let raito = `${frame.box.w} / ${frame.box.h}`;
 				return <div className="block-pattle-box" style={{aspectRatio: raito}}>
 					<svg className="block-pattle" style={{aspectRatio: raito}} viewBox={`${w/-2} ${w/-2} ${w} ${h}`} xmlns="http://www.w3.org/2000/svg" id="main-svg" fill="#7a7a7a">
 						<defs>

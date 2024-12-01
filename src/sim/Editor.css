@@ -40,11 +40,11 @@ path {
 }
 
 .block-pattle-box {
-	height: 100vh;
+/*	height: 100vh;*/
 }
 
 svg.block-pattle {
-	height: 100vh;
+/*	height: 100vh;*/
 }
 
 svg.block-pattle:hover {

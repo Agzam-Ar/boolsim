@@ -63,7 +63,8 @@ const Themes = {
 
     	frameBorderColor: "#000",
     	frameBackground: "#9E9E9E",
-    	frameHeadSize: "20px",
+    	frameHeadSize: "24px",
+		frameResizeGap: "4px",
     	frameHeadColor: "#1B88E7",
     	frameHeadColorAccent: "#57A5E5",
 
