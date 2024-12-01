@@ -126,7 +126,7 @@ function Editor() {
 				if(Vars.selected.target == undefined) return undefined;
 				let eElements = [];
 				let target = Vars.selected.target;
-				let type = target.constructor.name;
+				let type = target.classType;
 
 
 				if(type == 'Block') {

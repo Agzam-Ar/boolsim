@@ -267,6 +267,7 @@ window["Vars"] = Vars;
 class Block {
 
 	constructor(props) {
+		this.classType = "Block";
 		this.overlay = false;
 		if(props.preset == true) {
 			this.id = `preset-${blocksPattle.length}`;
