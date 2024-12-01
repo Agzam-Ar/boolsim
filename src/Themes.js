@@ -71,6 +71,7 @@ const Themes = {
     	selectColor: "#673AB7",
 
     	frameBorderColor: "#000",
+    	frameBorderColorLight: "#777",
     	frameBackground: "#D2D2D2",
     	frameBackgroundAccent: "#BBB",
     	frameColor: "#000",

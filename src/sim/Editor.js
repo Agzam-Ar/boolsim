@@ -6,6 +6,7 @@ import Vars from '../Vars';
 import Themes from '../Themes'
 import FloatFrame from '../ui/FloatFrame';
 import {useState, useRef} from 'react'
+import { FaPlay } from "react-icons/fa6";
 
 function Editor() {
  	const [repaints, setRepaints] = useState(0);
@@ -257,14 +258,15 @@ function Editor() {
 						}
 					}
 
+					let cols = [<th className="truth-table-body b" key="select"><button onClick={e => {
+						for (let b of inputs) b.active = rawRow[b.id];
+								Vars.renderScheme();
+					}}><FaPlay/></button></th>];
 					if(rawRowKey == currentTableKey) {
-						let cols = [];
 						for (let b of inputs) cols.push(<th className="truth-table-body i" key={b.id}>{rawRow[b.id] ? "1" : "0"}</th>);
 						for (let b of outputs) cols.push(<th className="truth-table-body o" key={b.id}>{rawRow[b.id] ? "1" : "0"}</th>);
 						rows.push({sort: sortKeys, e: <tr key={rawRowKey}>{cols}</tr>});
-					}
-					else if((valid && same == idsPull.length) || rawRowKey == currentTableKey) {
-						let cols = [];
+					} else if((valid && same == idsPull.length) || rawRowKey == currentTableKey) {
 						for (let b of inputs) cols.push(<td className="truth-table-body i" key={b.id}>{rawRow[b.id] ? "1" : "0"}</td>);
 						for (let b of outputs) cols.push(<td className="truth-table-body o" key={b.id}>{rawRow[b.id] ? "1" : "0"}</td>);
 						rows.push({sort: sortKeys, e: <tr key={rawRowKey}>{cols}</tr>});
@@ -276,6 +278,7 @@ function Editor() {
 							<table>
 								<thead>
 								<tr>
+									<th className="truth-table-head b"></th>
 									{head.map((e,id) => <th className={"truth-table-head " + e.type} key={id}>{e.name}</th>)}
 								</tr>
 								</thead>
@@ -289,6 +292,7 @@ function Editor() {
 									for (var i = 0; i < inputs.length; i++) {
 										inputs[i].active = ((1 << i) & s) == 0;
 									}
+									Vars.updateBlocks();
 									addStateToTable();
 								}
 								Vars.renderScheme();

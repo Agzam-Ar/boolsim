@@ -101,6 +101,7 @@ svg.block-pattle:hover {
 
 .truth-table-box > table {
 	border-spacing: 0;
+	border-bottom: var(--frame-border-color-light) var(--frame-resize-gap) solid;
 }
 
 .truth-table-box > button {
@@ -109,6 +110,7 @@ svg.block-pattle:hover {
 	padding: .25em 1em calc(.25em + 1px)  1em;
 	transition: .2s ease-in-out;
 	box-shadow: 0 -1px 0 -1px var(--select-color) inset;
+	border-bottom: var(--frame-border-color-light) var(--frame-resize-gap) solid;
 }
 
 .truth-table-box > button:hover {
@@ -126,20 +128,51 @@ svg.block-pattle:hover {
 }
 
 .truth-table-head {
-
+	height: 1.75em;
 }
 .truth-table-body {
 
 }
 
-.truth-table-head:nth-child(even), .truth-table-body:nth-child(even) {
+.truth-table-body.b {
+    width: 1px;
+    padding: 0;
+}
+
+.truth-table-body.b > button {
+	height: 1.75em;
+	width: 2.25em;
+	margin: 0;
+	padding: 0;
+	border: 0;
+	margin-left: var(--frame-resize-gap);
+	display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--frame-background-accent);
+    color: var(--unactive);
+    transition: .2s ease-in-out;
+	border-right: var(--frame-border-color-light) var(--frame-resize-gap) solid;
+}
+
+.truth-table-body.b > button:hover {
+    background: var(--unactive);
+    color: inherit;
+}
+
+.truth-table-head {
+	padding: 0;
+	margin: 0;
+}
+
+.truth-table-head:nth-child(odd), .truth-table-body:nth-child(odd) {
 	background: var(--frame-background-accent);
 }
 
 .truth-table-head.o, .truth-table-body.o {
 	background: var(--table-result-background);
 }
-.truth-table-head.o:nth-child(even), .truth-table-body.o:nth-child(even) {
+.truth-table-head.o:nth-child(odd), .truth-table-body.o:nth-child(odd) {
 	background: var(--table-result-background-accent);
 }
 
@@ -147,6 +180,10 @@ svg.block-pattle:hover {
 	mix-blend-mode: plus-lighter;
 }
 
+.truth-table-head.b {
+    background: var(--frame-background-accent);
+	border-right: var(--frame-border-color-light) var(--frame-resize-gap) solid;
+}
 
 circle {
 /*	transition: .5s ease-in-out;*/
