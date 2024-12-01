@@ -219,18 +219,23 @@ function Editor() {
 					}
 				}
 				
-				let currentTableKey = "";
-				let currentRow = {};
-				for (let b of inputs) {
-					currentTableKey += "_" + b.id + "-" + (b.active?'0':'1');
-					currentRow[b.id] = b.active;
+				const addStateToTable = () => {
+					let currentTableKey = "";
+					let currentRow = {};
+					for (let b of inputs) {
+						currentTableKey += "_" + b.id + "-" + (b.active?'0':'1');
+						currentRow[b.id] = b.active;
+					}
+					currentTableKey += "_o";
+					for (let b of outputs) {
+						currentTableKey += "_" + b.id + "-" + (b.active?'0':'1');
+						currentRow[b.id] = b.active;
+					}
+					truthtable[currentTableKey] = currentRow;
+					return currentTableKey;
 				}
-				currentTableKey += "_o";
-				for (let b of outputs) {
-					currentTableKey += "_" + b.id + "-" + (b.active?'0':'1');
-					currentRow[b.id] = b.active;
-				}
-				truthtable[currentTableKey] = currentRow;
+
+				let currentTableKey = addStateToTable();
 				
 				let rows = [];
 				for (let rawRowKey of Object.keys(truthtable)) {
@@ -245,30 +250,45 @@ function Editor() {
 						valid = false;
 						break;
 					}
+					let sortKeys = "";
+					for (let b of inputs) {
+						sortKeys += rawRow[b.id] ? "1" : "0";
+					}
+
 					if(rawRowKey == currentTableKey) {
 						let cols = [];
 						for (let b of inputs) cols.push(<th className="truth-table-body i" key={b.id}>{rawRow[b.id] ? "1" : "0"}</th>);
 						for (let b of outputs) cols.push(<th className="truth-table-body o" key={b.id}>{rawRow[b.id] ? "1" : "0"}</th>);
-						rows.push(<tr key={rawRowKey}>{cols}</tr>);
+						rows.push({sort: sortKeys, e: <tr key={rawRowKey}>{cols}</tr>});
 					}
 					else if((valid && same == idsPull.length) || rawRowKey == currentTableKey) {
 						let cols = [];
 						for (let b of inputs) cols.push(<td className="truth-table-body i" key={b.id}>{rawRow[b.id] ? "1" : "0"}</td>);
 						for (let b of outputs) cols.push(<td className="truth-table-body o" key={b.id}>{rawRow[b.id] ? "1" : "0"}</td>);
-						rows.push(<tr key={rawRowKey}>{cols}</tr>);
+						rows.push({sort: sortKeys, e: <tr key={rawRowKey}>{cols}</tr>});
 					}
 				}
 				return <div className="truth-table-box">
 							<table>
 								<thead>
 								<tr>
-									{head.map((e,id) => <th className={"truth-table-head "+e.type} key={id}>{e.name}</th>)}
+									{head.map((e,id) => <th className={"truth-table-head " + e.type} key={id}>{e.name}</th>)}
 								</tr>
 								</thead>
 								<tbody>
-									{rows}
+									{rows.map((e,id) => e.e)}
 								</tbody>
 							</table>
+							<button onClick={e => {
+								let index = 0;
+								for (var s = 0; s < 1 << inputs.length; s++) {
+									for (var i = 0; i < inputs.length; i++) {
+										inputs[i].active = ((1 << i) & s) == 0;
+									}
+									addStateToTable();
+								}
+								Vars.renderScheme();
+							}}>Generate</button>
 					   </div>;
 			}}/>
 		</div>
