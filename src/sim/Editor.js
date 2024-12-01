@@ -146,9 +146,9 @@ function Editor() {
 							type: "select",
 							variants: [
 								{name: "Right", value: 0},
-								{name: "Top", value: 1},
+								{name: "Down", value: 1},
 								{name: "Left", value: 2},
-								{name: "Down", value: 3},
+								{name: "Top", value: 3},
 							],
 						},
 					};
