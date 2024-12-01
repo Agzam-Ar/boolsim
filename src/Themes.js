@@ -41,6 +41,14 @@ const Themes = {
 
     	selectColor: "#da00ff",
 
+    	frameBorderColor: "#1C0062",
+    	frameBackground: "#0A0023",
+    	frameHeadSize: "20px",
+		frameResizeGap: "4px",
+    	frameHeadColor: "#050010",
+    	frameHeadColorAccent: "#0A0023",
+
+
 		powerSize: .5,
 		glow: true,
 		powerBorderSize: 0,
@@ -62,11 +70,13 @@ const Themes = {
     	selectColor: "#da00ff",
 
     	frameBorderColor: "#000",
-    	frameBackground: "#9E9E9E",
-    	frameHeadSize: "24px",
+    	frameBackground: "#D2D2D2",
+    	frameHeadSize: "20px",
 		frameResizeGap: "4px",
-    	frameHeadColor: "#1B88E7",
-    	frameHeadColorAccent: "#57A5E5",
+    	frameHeadColor: "#777",
+    	frameHeadColorAccent: "#888",
+
+    	inputBackground: "#FFF",
 
 		powerSize: .75,
 		glow: false,
@@ -88,6 +98,13 @@ const Themes = {
 
     	selectColor: "#da00ff",
 
+    	frameBorderColor: "#000",
+    	frameBackground: "#212121",
+    	frameHeadSize: "20px",
+		frameResizeGap: "4px",
+    	frameHeadColor: "#2c2c2c",
+    	frameHeadColorAccent: "#3c3c3c",
+
 		powerSize: .75,
 		glow: false,
 		powerBorderSize: 2,
@@ -104,9 +121,12 @@ Themes.apply(Themes.simple);
 
 
 window.addEventListener("keydown", (e) => {
-	if(e.key == '1') Themes.apply(Themes.space);
-	if(e.key == '2') Themes.apply(Themes.simple);
-	if(e.key == '3') Themes.apply(Themes.simpleDark);
+	if(e.ctrlKey) {
+		if(e.key == '1') Themes.apply(Themes.space);
+		if(e.key == '2') Themes.apply(Themes.simple);
+		if(e.key == '3') Themes.apply(Themes.simpleDark);
+		if(e.key == '1' || e.key == '2' || e.key == '3') e.preventDefault();
+	}
 });
 
 

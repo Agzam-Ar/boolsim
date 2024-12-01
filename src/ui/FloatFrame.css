@@ -8,7 +8,7 @@
 /*	border: .1em #f00 solid;*/
 
 /*	box-shadow: 0 0 0 .1em #f00 inset;*/
-	box-shadow: .5em .5em 1em #00000055;
+	box-shadow: .5em .5em 1em #00000066;
 
 /*	background: var(--frame-border-color);*/
 
@@ -104,10 +104,22 @@
 .framehead {
 	cursor: pointer;
 	user-select: none;
-	width: 100%;
+	width: calc(100% - 1em);
+/*	text-align: left;*/
+	font-weight: bold;
+	white-space: nowrap;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	padding: 0 .5em;
+/*	padding-left: 1em;*/
+	padding-top: calc(var(--frame-resize-gap) * 2);
 	height: var(--frame-head-size);
 	background: var(--frame-head-color);
 	background-image: radial-gradient(var(--frame-head-color-accent) 30%, transparent 20%);
 	background-position: var(--frame-resize-gap) var(--frame-resize-gap);
 	background-size: calc(var(--frame-head-size) / 2.5) calc(var(--frame-head-size) / 2.5);
+	z-index: var(--layer-frame-head);
+	border-bottom: var(--frame-resize-gap) var(--frame-border-color) solid;
+
+	text-shadow: 2px 1px 1px var(--frame-border-color);
 }

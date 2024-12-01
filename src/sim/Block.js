@@ -53,22 +53,31 @@ class BlockElement extends React.Component {
 		let box = this.block.box;
 	
 		let eOutputs = [];
+		let eOutputsSelected = [];
+		let selected = Vars.selected.target == this.block;
 
 		let block = this.block;
 		for (var i = 0; i < this.block.oPorts.length; i++) {
 			let port = this.block.oPorts[i];
 			eOutputs.push(this.createPort('o', i, port));
+			if(selected) eOutputsSelected.push(this.createPort('o', i, port, true));
 		}
 
 		for (var i = 0; i < this.block.iPorts.length; i++) {
 			let port = this.block.iPorts[i];
 			eOutputs.push(this.createPort('i', i, port));
+			if(selected) eOutputsSelected.push(this.createPort('i', i, port, true));
 		}
 
 		let glow = this.block.active && Themes.theme.glow;
 		let border = Themes.theme.powerBorderSize * Themes.theme.powerSize;
 		
 		let body = this.getBody();
+
+		if(Vars.selected.target == this.block) console.log("selected");
+		if(selected && border <= 0) {
+			border = .2  * Themes.theme.powerSize;
+		}
 		// return <rect width={box.w} height="100" />;
         return (<g x={box.x} y={box.y} stroke={this.block.active ? "url(#gradient)" : "var(--unactive)"} transform={`translate(${box.x} ${box.y})`}> 
 			<rect onClick={e => {
@@ -100,7 +109,11 @@ class BlockElement extends React.Component {
 				Vars.mouse.draggBlockPos = {x:block.box.x, y:block.box.y};
 				Vars.mouse.draggBlock = block;
 			}} class="element-box" strokeWidth={border} fill="transparent" x={box.w/-2} y={box.h/-2} width={box.w} height={box.h}></rect>
-
+			
+			{eOutputsSelected}
+			{selected ? <g className="no-events" strokeWidth={border+1} stroke={Themes.theme.selectColor} transform={`rotate(${this.block.angle*90} 0 0)`}>
+				{this.getBody()}
+			</g> : []}
 			{eOutputs}
 			{border > 0 ? <g strokeWidth={border} stroke="var(--power-border-color)" fill="var(--power-border-color)" transform={`rotate(${this.block.angle*90} 0 0)`}>{body}</g> : []}
 			<g fill="var(--func-color)"transform={`rotate(${this.block.angle*90} 0 0)`}>{body}</g>
@@ -111,7 +124,7 @@ class BlockElement extends React.Component {
         </g>);
     }
 
-	createPort(type, portId, config) {
+	createPort(type, portId, config, selected=false) {
 		let glow = config.active && Themes.theme.glow;
 		let border = Themes.theme.powerBorderSize * Themes.theme.powerSize;
 
@@ -133,6 +146,10 @@ class BlockElement extends React.Component {
 		let box = this.block.box;
 		let gradientName = `gradient-block-${this.block.id}-${x1}-${y1}-${x2}-${y2}`;
 		let d = `M${x1},${y1} L${x2},${y2}`;
+		
+		if(selected && border <= 0) {
+			border = .2  * Themes.theme.powerSize;
+		}
 
 		return <g key={type + portId} >
         	<defs>
@@ -142,17 +159,18 @@ class BlockElement extends React.Component {
 				</linearGradient>
         	</defs>
         	<g class="no-events" >
-				{border > 0 ? <path className={Themes.theme.mixBlend} d={d} strokeWidth={border} stroke="var(--power-border-color)" strokeLinecap="round" strokeLinejoin="miter"></path> : []}
+				{selected ? <path className="no-events" d={d} strokeWidth={border+1} stroke={Themes.theme.selectColor} strokeLinecap="round" strokeLinejoin="miter"></path> : undefined}
+				
+				{border > 0 ? <path className={Themes.theme.mixBlend} d={d} strokeWidth={border} stroke="var(--power-border-color)" strokeLinecap="round" strokeLinejoin="miter"></path> : undefined}
 	
 				<path className="light" d={d} stroke={config.active ? `url(#${gradientName})` : "var(--unactive)"} strokeLinecap="round" strokeLinejoin="miter"></path>
 				{glow ? <path className="bloor1" d={d} stroke={config.active ? `url(#${gradientName})` : "var(--unactive)"} strokeLinecap="butt" strokeLinejoin="miter" fillOpacity="0" strokeMiterlimit="4" strokeOpacity="1"></path> : <g></g>}
 				{glow ? <path className="bloor2" d={d} stroke={config.active ? `url(#${gradientName})` : "var(--unactive)"} strokeLinecap="butt" strokeLinejoin="miter" fillOpacity="0" strokeMiterlimit="4" strokeOpacity="1"></path> : <g></g>}
-				
-				{border > 0 ? <circle strokeWidth={border} stroke="var(--power-border-color)" fill="var(--power-border-color)" cx={config.dx} cy={config.dy} r={size}></circle> : []}
-	
+				{selected ? <circle strokeWidth={border+1} stroke={Themes.theme.selectColor} fill={Themes.theme.selectColor} cx={config.dx} cy={config.dy} r={size}></circle> : undefined}
+				{border > 0 ? <circle strokeWidth={border} stroke="var(--power-border-color)" fill="var(--power-border-color)" cx={config.dx} cy={config.dy} r={size}></circle> : undefined}
 				<circle stroke={config.active ? "var(--power100)" : "var(--unactive)"} fill="var(--unactive)" cx={config.dx} cy={config.dy} r={size}></circle>
-				{glow ? <circle className="bloor1" stroke={config.active ? "var(--power100)" : "none"} fill="none" cx={config.dx} cy={config.dy} r={size}></circle> : []}
-				{glow ? <circle className="bloor2" stroke={config.active ? "var(--power100)" : "none"} fill="none" cx={config.dx} cy={config.dy} r={size}></circle> : []}
+				{glow ? <circle className="bloor1" stroke={config.active ? "var(--power100)" : "none"} fill="none" cx={config.dx} cy={config.dy} r={size}></circle> : undefined}
+				{glow ? <circle className="bloor2" stroke={config.active ? "var(--power100)" : "none"} fill="none" cx={config.dx} cy={config.dy} r={size}></circle> : undefined}
 			</g>
 			<circle stroke="transparent" fill="transparent" strokeWidth={border} cx={config.dx} cy={config.dy} r={size} onMouseEnter={e => {
 				if(this.block.preset) return;

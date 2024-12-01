@@ -55,6 +55,22 @@ svg.block-pattle:hover {
 	transition: .2s ease-in-out;
 }
 
+
+.inspector-box {
+	width: 100%;
+	display: flex;
+    flex-direction: column;
+}
+
+.inspector-box > lable {
+	width: 100%;
+}
+
+.inspector-box > input {
+	background: var(--input-background);
+	padding: .25em 1em;
+}
+
 .mix-blend-plus-lighter {
 	mix-blend-mode: plus-lighter;
 }

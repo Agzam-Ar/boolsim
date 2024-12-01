@@ -58,7 +58,6 @@ function Editor() {
 	}
 
 	return <div className="editor-box">
-		
 		<svg onMouseDown={e => {
 			if(e.target != ref.current) return;
 			if(e.button == 1 || e.button == 2) {
@@ -92,7 +91,7 @@ function Editor() {
 		</svg>
 
 		<div>
-			<FloatFrame frame={Vars.frame("blocks-pattle")} content={() => {
+			<FloatFrame frame={Vars.frame("blocks-pattle")} title="Blocks pattle" content={() => {
 				let eBlocks = [];
 				let bs = Vars.getBlocksPattle();
 				for (let b of bs) {
@@ -120,6 +119,54 @@ function Editor() {
 							{eBlocks}
 					</svg>
 				</div>;		
+			}}/>
+
+			<FloatFrame frame={Vars.frame("blocks-inspector")} title="Inspector" content={() => {
+				if(Vars.selected.target == undefined) return undefined;
+				let eElements = [];
+				let target = Vars.selected.target;
+				let type = target.constructor.name;
+
+
+				if(type == 'Block') {
+					let keys = {
+						name: {
+							name: "Name",
+							type: "string",
+						},
+						inputs: {
+							name: "Number of inputs",
+							type: "int",
+							min: 0,
+							max: 10,
+						}
+					};
+					for (let key of Object.keys(keys)) {
+						let config = keys[key];
+						eElements.push(<label key={key + "-label"} htmlFor="" >{config.name}</label>);
+						if(config.type == 'string') {
+							eElements.push(<input key={key + "-input"} type="text" value={target[key]} onChange={e => {
+								target[key] = e.target.value;
+								Vars.renderScheme();
+							}}/>);
+						}
+						if(config.type == 'int') {
+							eElements.push(<input key={key + "-input"} type="number" min={config.min} max={config.max} value={target[key+"tmp"] == undefined ? target[key] : target[key+"tmp"]} onChange={e => {
+								let value = e.target.value;
+								target[key+"tmp"] = value;
+								if(config.min <= value && value < config.max) {
+									target[key] = value;
+								}
+								Vars.renderScheme();
+							}}/>);
+						}
+					}
+				}
+				return <div className="inspector-box">
+							{eElements}
+							
+							{/*<label htmlFor="">Input ports</label><input type="number"/>*/}
+						</div>;
 			}}/>
 		</div>
 

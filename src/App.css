@@ -13,14 +13,18 @@
 
 
 
-
+@import url('https://fonts.googleapis.com/css2?family=M+PLUS+2:wght@100..900&family=MuseoModerno:ital,wght@0,100..900;1,100..900&family=Raleway:ital,wght@0,100..900;1,100..900&display=swap');
 
 .App {
     text-align: center;
     background: var(--background-accent);
     overflow: hidden;
-    font-family: sans-serif;
+    font-family: "Raleway", sans-serif;
+    font-optical-sizing: auto;
+    font-weight: <weight>;
+    font-style: normal;
 }
+
 
 .App-logo {
     height: 40vmin;
@@ -55,4 +59,9 @@
     to {
         transform: rotate(360deg);
     }
+}
+
+input {
+    outline: none;
+    border: none;
 }

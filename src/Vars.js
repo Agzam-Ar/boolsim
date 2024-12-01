@@ -170,6 +170,7 @@ let Vars = {
 	toSvgPoint(evt) {
 		if(Vars.schemeSvg == undefined) return undefined;
 		let svg = Vars.schemeSvg();
+		if(svg == undefined) return undefined;
 		let pt = svg.createSVGPoint();
 	    pt.x = evt.clientX == undefined ? evt.x : evt.clientX;
 	    pt.y = evt.clientY == undefined ? evt.y : evt.clientY;
@@ -211,11 +212,19 @@ class Frame {
 
 
 frames["blocks-pattle"] = new Frame({
-	x:getLocalStorageItem('frame.blocks-pattle.x', 0),
-	y:getLocalStorageItem('frame.blocks-pattle.y', 0), 
+	x:getLocalStorageItem('frame.blocks-pattle.x', 10),
+	y:getLocalStorageItem('frame.blocks-pattle.y', 10), 
 	w:getLocalStorageItem('frame.blocks-pattle.w', window.innerHeight*3/20),
 	h:getLocalStorageItem('frame.blocks-pattle.h', window.innerHeight*10/20), 
 	minw:window.innerHeight*3/40, 	minh:window.innerHeight*10/40});
+
+
+frames["blocks-inspector"] = new Frame({
+	x:getLocalStorageItem('frame.blocks-inspector.x1', window.innerWidth- window.innerHeight*7/20),
+	y:getLocalStorageItem('frame.blocks-inspector.y1', window.innerHeight*15/20), 
+	w:getLocalStorageItem('frame.blocks-inspector.w1', window.innerHeight*3/10),
+	h:getLocalStorageItem('frame.blocks-inspector.h1', window.innerHeight*4/20), 
+	minw:window.innerHeight*3/40, 	minh:window.innerHeight*3/40});
 
 
 window["Vars"] = Vars;
@@ -292,6 +301,7 @@ class Block {
 		this.updatePorts();
 	}
 
+
 	static decode(code, props) {
 		let block = {x:0,y:0};
 		let propcode = "";
@@ -341,6 +351,17 @@ class Block {
 	}
 
 	updatePorts() {
+		if(this.iPorts.length != this.inputs) {
+			let iPorts = [];
+			for (var i = 0; i < this.inputs; i++) {
+				let pos = this.getInputPos(i);
+				if(this.iPorts[i] != undefined) iPorts.push(this.iPorts[i]);
+				else iPorts.push({x:this.box.x + pos.x, y:this.box.y + pos.y, dx:pos.x, dy:pos.y, drawSrcX:pos.srcX, drawSrcY:pos.srcY});
+			}
+			this.iPorts = iPorts;
+		}
+
+
 		for (var i = 0; i < this.oPorts.length; i++) {
 			let pos = this.getOutputPos(i);
 			this.oPorts[i].x = this.box.x + pos.x;
@@ -437,7 +458,7 @@ class Block {
 		let sv = 0;
 		
 
-		let iDelta = this.inputs%2 == 1 ? Math.floor(index - this.inputs/2+1) : (index < this.inputs/2 ? index+1 : -index-this.inputs/2+1);
+		let iDelta = this.inputs%2 == 1 ? Math.floor(index - this.inputs/2+1) : (index < this.inputs/2 ? Math.floor(index - this.inputs/2+1)-1 : Math.floor(index - this.inputs/2+1));
 
 		if(this.type == Vars.blockTypes.not) {
 			u = -10;
@@ -506,6 +527,10 @@ class Wire {
 		}
 		let pfrom = from.oPorts[this.toPort];
 		let pto   = to.iPorts[this.fromPort];
+		if(to.iPorts[this.toPort] == undefined) {
+			this.remove();
+			return;
+		}
 		to.iPorts[this.toPort].active = from.oPorts[this.fromPort].active;
 		to.update();
 	}
@@ -593,6 +618,7 @@ window.addEventListener('click', e => {
 });
 
 window.addEventListener('mousedown', e => {
+	Vars.mouse.clickTarget = e.target;
 });
 
 window.addEventListener('mousemove', e => {
@@ -716,8 +742,10 @@ window.addEventListener('mouseup', e => {
 	Vars.mouse.draggLastPos = undefined;
 	Vars.mouse.draggBlockPos = undefined;
 
-	Vars.selected.target = undefined;
-	Vars.selected.onKeyDown = undefined;
+	if(Vars.mouse.clickTarget == Vars.schemeSvg()) {
+		Vars.selected.target = undefined;
+		Vars.selected.onKeyDown = undefined;
+	}
 
 	Vars.renderScheme();
 });
@@ -735,24 +763,26 @@ window.addEventListener('contextmenu', e => {
 });
 
 window.addEventListener("wheel", e => {
-	const scrollPower = .03;
-	let transform = (p) => {return {
-		x: (p.x - window.innerWidth/2)*Vars.camera.scale,
-		y: (p.y - window.innerHeight/2)*Vars.camera.scale,
-	}};
-	let src = transform(Vars.mouse.client);//.x*Vars.camera.scale, y: Vars.mouse.client.y*Vars.camera.scale};
-	if(e.deltaY > 0) {
-		Vars.camera.scale += scrollPower;
-	} else {
-		if(Vars.camera.scale - scrollPower > 0) {
-			Vars.camera.scale -= scrollPower;
+	if(e.ctrlKey) {
+		const scrollPower = .03;
+		let transform = (p) => {return {
+			x: (p.x - window.innerWidth/2)*Vars.camera.scale,
+			y: (p.y - window.innerHeight/2)*Vars.camera.scale,
+		}};
+		let src = transform(Vars.mouse.client);//.x*Vars.camera.scale, y: Vars.mouse.client.y*Vars.camera.scale};
+		if(e.deltaY > 0) {
+			Vars.camera.scale += scrollPower;
+		} else {
+			if(Vars.camera.scale - scrollPower > 0) {
+				Vars.camera.scale -= scrollPower;
+			}
 		}
+		let result = transform(Vars.mouse.client);//{x: Vars.mouse.client.x*Vars.camera.scale, y: Vars.mouse.client.y*Vars.camera.scale};
+	
+		Vars.camera.x += (src.x - result.x);///Vars.camera.scale;
+		Vars.camera.y += (src.y - result.y);///Vars.camera.scale;
+		Vars.renderScheme();
 	}
-	let result = transform(Vars.mouse.client);//{x: Vars.mouse.client.x*Vars.camera.scale, y: Vars.mouse.client.y*Vars.camera.scale};
-
-	Vars.camera.x += (src.x - result.x);///Vars.camera.scale;
-	Vars.camera.y += (src.y - result.y);///Vars.camera.scale;
-	Vars.renderScheme();
 });
 
 document.getElementById('root').addEventListener('wheel', e => {
@@ -770,19 +800,19 @@ wirePreset = new Wire({preset: true});
 let needExample = true;
 
 if(window.location.hash.length > 1) {
-	// needExample = false;
-	// try {
-	// 	let decoded = decodeState(window.location.hash.substring(1));
-	// 	console.log("Decoded state", decoded);
-	// 	if(decoded == undefined) {
-	// 		needExample = true;
-	// 	} else {
-	// 		state = decoded;
-	// 	}
-	// } catch (e) {
-	// 	console.log(e);
-	// 	needExample = true;
-	// }
+	needExample = false;
+	try {
+		let decoded = decodeState(window.location.hash.substring(1));
+		console.log("Decoded state", decoded);
+		if(decoded == undefined) {
+			needExample = true;
+		} else {
+			state = decoded;
+		}
+	} catch (e) {
+		console.log(e);
+		needExample = true;
+	}
 }
 
 
@@ -795,17 +825,17 @@ if(needExample) {
 	new Wire({from:$b.id, to:$notb.id, fromPort:0, toPort:0});
 	
 	let $and1 = new Block({type: Vars.blockTypes.and,    x:1, y:1, name: "and", angle: 0});
-	new Wire({from:$notb.id, to:$and1.id, fromPort:0, toPort:0});
-	new Wire({from:$c.id,    to:$and1.id, fromPort:0, toPort:1});
+	new Wire({from:$notb.id, to:$and1.id, fromPort:0, toPort:1});
+	new Wire({from:$c.id,    to:$and1.id, fromPort:0, toPort:0});
 	
 	let $and2 = new Block({type: Vars.blockTypes.and,    x:4, y:-1, name: "and", angle: 0});
-	new Wire({from:$a.id, 	 to:$and2.id, fromPort:0, toPort:0});
-	new Wire({from:$notb.id, to:$and2.id, fromPort:0, toPort:1});
+	new Wire({from:$a.id, 	 to:$and2.id, fromPort:0, toPort:1});
+	new Wire({from:$notb.id, to:$and2.id, fromPort:0, toPort:0});
 	
 	
-	let $and3 = new Block({type: Vars.blockTypes.and,    x:2, y:3, name: "and", angle: 0});
-	new Wire({from:$a.id, to:$and3.id, fromPort:0, toPort:0});
-	new Wire({from:$c.id, to:$and3.id, fromPort:0, toPort:1});
+	let $and3 = new Block({type: Vars.blockTypes.and,    x:2, y:4, name: "and", angle: 0});
+	new Wire({from:$a.id, to:$and3.id, fromPort:0, toPort:1});
+	new Wire({from:$c.id, to:$and3.id, fromPort:0, toPort:0});
 	
 	let $or  = new Block({type: Vars.blockTypes.or, 	  x:8, y:1, name: "or",  angle: 0, inputs: 3});
 	new Wire({from:$and1.id, to:$or.id, fromPort:0, toPort:1});

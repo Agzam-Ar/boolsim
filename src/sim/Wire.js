@@ -112,6 +112,8 @@ class WireElement extends React.Component {
 					console.log("Down");
 					Vars.renderScheme();
         		}}>
+        		{selected ? <circle strokeWidth={border+1} stroke={Themes.theme.selectColor} fill={Themes.theme.selectColor} cx={x1} cy={y1} r={Vars.nodesize}></circle> : undefined}
+        		{selected ? <circle strokeWidth={border+1} stroke={Themes.theme.selectColor} fill={Themes.theme.selectColor} cx={x2} cy={y2} r={Vars.nodesize}></circle> : undefined}
         		{selected ? <path strokeWidth={border+1} stroke={Themes.theme.selectColor} d={d}/> : []}
         		{border > 0 ? <path strokeWidth={border} stroke="var(--power-border-color)" d={d}/> : (<g></g>)}
         		<path d={d}/>
