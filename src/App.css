@@ -61,12 +61,8 @@
     }
 }
 
-input {
+input, select, button {
     outline: none;
     border: none;
 }
 
-select {
-    outline: none;
-    border: none;
-}

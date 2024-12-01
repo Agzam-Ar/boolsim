@@ -250,9 +250,11 @@ function Editor() {
 						valid = false;
 						break;
 					}
-					let sortKeys = "";
-					for (let b of inputs) {
-						sortKeys += rawRow[b.id] ? "1" : "0";
+					let sortKeys = 0;
+					for (var i = 0; i < inputs.length; i++) {
+						if(rawRow[inputs[inputs.length-i-1].id]) {
+							sortKeys += 1 << i;
+						}
 					}
 
 					if(rawRowKey == currentTableKey) {
@@ -268,6 +270,8 @@ function Editor() {
 						rows.push({sort: sortKeys, e: <tr key={rawRowKey}>{cols}</tr>});
 					}
 				}
+				rows.sort((r1,r2) => r1.sort-r2.sort);
+				console.log(rows);
 				return <div className="truth-table-box">
 							<table>
 								<thead>
