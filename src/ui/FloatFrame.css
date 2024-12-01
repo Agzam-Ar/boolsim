@@ -4,6 +4,7 @@
 .floatframe {
 	position: fixed;
 	background: transparent;
+	color: var(--frame-color);
 
 /*	border: .1em #f00 solid;*/
 
@@ -104,6 +105,7 @@
 .framehead {
 	cursor: pointer;
 	user-select: none;
+	color: #fff;
 	width: calc(100% - 1em);
 /*	text-align: left;*/
 	font-weight: bold;

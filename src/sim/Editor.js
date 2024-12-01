@@ -139,7 +139,17 @@ function Editor() {
 							type: "int",
 							min: 0,
 							max: 10,
-						}
+						},
+						angle: {
+							name: "Number of inputs",
+							type: "select",
+							variants: [
+								{name: "Right", value: 0},
+								{name: "Top", value: 1},
+								{name: "Left", value: 2},
+								{name: "Down", value: 3},
+							],
+						},
 					};
 					for (let key of Object.keys(keys)) {
 						let config = keys[key];
@@ -159,6 +169,12 @@ function Editor() {
 								}
 								Vars.renderScheme();
 							}}/>);
+						}
+						if(config.type == 'select') {
+							eElements.push(<select value={target[key]}onChange={e => {
+								target[key] = e.target.value;
+								Vars.renderScheme();
+							}}>{config.variants.map(e => <option  value={e.value}>{e.name}</option>)}</select>);
 						}
 					}
 				}

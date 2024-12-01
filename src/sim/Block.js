@@ -111,14 +111,14 @@ class BlockElement extends React.Component {
 			}} class="element-box" strokeWidth={border} fill="transparent" x={box.w/-2} y={box.h/-2} width={box.w} height={box.h}></rect>
 			
 			{eOutputsSelected}
-			{selected ? <g className="no-events" strokeWidth={border+1} stroke={Themes.theme.selectColor} transform={`rotate(${this.block.angle*90} 0 0)`}>
+			{selected ? <g className="no-events" strokeWidth={border+1} stroke={Themes.theme.selectColor} transform={`rotate(${this.block.angle*-90} 0 0)`}>
 				{this.getBody()}
 			</g> : []}
 			{eOutputs}
-			{border > 0 ? <g strokeWidth={border} stroke="var(--power-border-color)" fill="var(--power-border-color)" transform={`rotate(${this.block.angle*90} 0 0)`}>{body}</g> : []}
-			<g fill="var(--func-color)"transform={`rotate(${this.block.angle*90} 0 0)`}>{body}</g>
-			{glow ? <g transform={`rotate(${this.block.angle*90} 0 0)`} className="bloor1">{this.getBody()}</g> : []}
-			{glow ? <g transform={`rotate(${this.block.angle*90} 0 0)`} className="bloor2">{this.getBody()}</g> : []}
+			{border > 0 ? <g strokeWidth={border} stroke="var(--power-border-color)" fill="var(--power-border-color)" transform={`rotate(${this.block.angle*-90} 0 0)`}>{body}</g> : []}
+			<g fill="var(--func-color)"transform={`rotate(${this.block.angle*-90} 0 0)`}>{body}</g>
+			{glow ? <g transform={`rotate(${this.block.angle*-90} 0 0)`} className="bloor1">{this.getBody()}</g> : []}
+			{glow ? <g transform={`rotate(${this.block.angle*-90} 0 0)`} className="bloor2">{this.getBody()}</g> : []}
 			{<text className="label" stroke="none">{this.block.name}</text>}
 			{/*{<text y="8" className="label" stroke="none">#{this.block.id}</text>}*/}
         </g>);

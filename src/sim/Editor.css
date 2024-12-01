@@ -62,13 +62,26 @@ svg.block-pattle:hover {
     flex-direction: column;
 }
 
-.inspector-box > lable {
+.inspector-box > label {
+	color: var(--frame-color);
+	font-weight: bold;
 	width: 100%;
+	padding: .1em .1em;
 }
 
 .inspector-box > input {
+	color: var(--frame-color);
 	background: var(--input-background);
-	padding: .25em 1em;
+	padding: .25em 1em calc(.25em + 1px)  1em;
+	transition: .2s ease-in-out;
+	box-shadow: 0 -1px 0 -1px var(--select-color) inset;
+}
+
+.inspector-box > input:hover {
+	background: var(--input-background-hover);
+}
+.inspector-box > input:focus {
+	box-shadow: 0 -1px 0 1px var(--select-color) inset;
 }
 
 .mix-blend-plus-lighter {

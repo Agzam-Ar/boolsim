@@ -71,12 +71,14 @@ const Themes = {
 
     	frameBorderColor: "#000",
     	frameBackground: "#D2D2D2",
+    	frameColor: "#000",
     	frameHeadSize: "20px",
 		frameResizeGap: "4px",
     	frameHeadColor: "#777",
     	frameHeadColorAccent: "#888",
 
-    	inputBackground: "#FFF",
+    	inputBackground: "#eee",
+    	inputBackgroundHover: "#FFF",
 
 		powerSize: .75,
 		glow: false,
@@ -100,10 +102,14 @@ const Themes = {
 
     	frameBorderColor: "#000",
     	frameBackground: "#212121",
+    	frameColor: "#fff",
     	frameHeadSize: "20px",
 		frameResizeGap: "4px",
     	frameHeadColor: "#2c2c2c",
     	frameHeadColorAccent: "#3c3c3c",
+
+    	inputBackground: "#333",
+    	inputBackgroundHover: "#444",
 
 		powerSize: .75,
 		glow: false,
