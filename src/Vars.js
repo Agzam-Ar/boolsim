@@ -930,6 +930,9 @@ if(needExample) {
 	new Wire({from:$and1.id, to:$or.id, fromPort:0, toPort:1});
 	new Wire({from:$and2.id, to:$or.id, fromPort:0, toPort:2});
 	new Wire({from:$and3.id, to:$or.id, fromPort:0, toPort:0});
+
+	let $lamp  = new Block({type: Vars.blockTypes.lamp, 	  x:12, y:1, name: "F",  angle: 0});
+	new Wire({from:$or.id, to:$lamp.id, fromPort:0, toPort:0});
 }
 
 

@@ -142,7 +142,7 @@ function Editor() {
 							max: 10,
 						},
 						angle: {
-							name: "Number of inputs",
+							name: "Angle",
 							type: "select",
 							variants: [
 								{name: "Right", value: 0},
