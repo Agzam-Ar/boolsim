@@ -78,6 +78,7 @@ const decodeState = (code, props={index:0}) => {
 		let w = Wire.decode(code, props);
 		decoded.links[w.id] = w;
 	}
+
 	console.log("Decoded result: ", decoded);
 
 
@@ -131,12 +132,15 @@ let Vars = {
 		and: 		1,
 		or: 		2,
 		not: 		3,
+		node:		4,
 	},
 	tilesize: 10,
 	nodesize: .3,
 	camera: {x:getLocalStorageItem('camera.x', 0), y:getLocalStorageItem('camera.y', 0), width: window.innerWidth, height: window.innerHeight, scale: getLocalStorageItem('camera.scale', 1/10)},
 	mouse: {draggBlock: undefined, draggStart: undefined},
 	selected: {},
+	createBlock: (props) => new Block(props),
+	createLink: (props) => new Wire(props),
 	getHistory: () => history,
 	getHistoryIndex: () => historyIndex,
 	getHistoryLastState: () => {
@@ -220,10 +224,10 @@ frames["blocks-pattle"] = new Frame({
 
 
 frames["blocks-inspector"] = new Frame({
-	x:getLocalStorageItem('frame.blocks-inspector.x1', window.innerWidth- window.innerHeight*7/20),
-	y:getLocalStorageItem('frame.blocks-inspector.y1', window.innerHeight*15/20), 
-	w:getLocalStorageItem('frame.blocks-inspector.w1', window.innerHeight*3/10),
-	h:getLocalStorageItem('frame.blocks-inspector.h1', window.innerHeight*4/20), 
+	x:getLocalStorageItem('frame.blocks-inspector.x', window.innerWidth- window.innerHeight*7/20),
+	y:getLocalStorageItem('frame.blocks-inspector.y', window.innerHeight*15/20), 
+	w:getLocalStorageItem('frame.blocks-inspector.w', window.innerHeight*3/10),
+	h:getLocalStorageItem('frame.blocks-inspector.h', window.innerHeight*4/20), 
 	minw:window.innerHeight*3/40, 	minh:window.innerHeight*3/40});
 
 
@@ -415,6 +419,12 @@ class Block {
 				this.oPorts[i].active = this.active;
 			}
 		}
+		if(this.type == Vars.blockTypes.node && this.iPorts.length > 0) {
+			this.active = this.iPorts[0].active;
+			for (var i = 0; i < this.oPorts.length; i++) {
+				this.oPorts[i].active = this.active;
+			}
+		}
 	}
 	
 	getOutputPos(index) {
@@ -426,6 +436,12 @@ class Block {
 		let su = Math.min(box.w, box.h)*.3;
 		let sv = 0;
 
+		if(this.type == Vars.blockTypes.node) {
+			u = 0;
+			v = 0;
+			su = 0;
+			sv = 0;
+		}
 		if(this.type == Vars.blockTypes.switch) {
 			u = 10;
 			v = 0;
@@ -460,6 +476,12 @@ class Block {
 
 		let iDelta = this.inputs%2 == 1 ? Math.floor(index - this.inputs/2+1) : (index < this.inputs/2 ? Math.floor(index - this.inputs/2+1)-1 : Math.floor(index - this.inputs/2+1));
 
+		if(this.type == Vars.blockTypes.node) {
+			u = 0;
+			v = 0;
+			su = 0;
+			sv = 0;
+		}
 		if(this.type == Vars.blockTypes.not) {
 			u = -10;
 			v = 0;
@@ -535,10 +557,10 @@ class Wire {
 		to.update();
 	}
 
-	remove() {
+	remove(rerender=true) {
 		Vars.getLinks()[this.id] = undefined;
-		Vars.getBlocks()[this.from].listeners['linkUpdateTo' + this.id] = undefined;
-		Vars.renderScheme();
+		if(Vars.getBlocks()[this.from] != undefined) Vars.getBlocks()[this.from].listeners['linkUpdateTo' + this.id] = undefined;
+		if(rerender) Vars.renderScheme();
 	}
 
 
@@ -586,6 +608,11 @@ window.addEventListener('keydown', e => {
 				console.log("Decoded state", decoded);
 				if(decoded != undefined) {
 					state = decoded;
+					nextId = 0;
+					for (let b of Object.values(state.blocks)) {
+						nextId = Math.max(nextId, b.id);
+					}
+					nextId++;
 					Vars.$renderScheme();
 					console.log("Successfully opened!");
 				} else {
@@ -789,10 +816,11 @@ document.getElementById('root').addEventListener('wheel', e => {
 	e.preventDefault();
 }, true);
 
-new Block({preset: true, type: Vars.blockTypes.switch, name: "Switch", angle: 0});
+new Block({preset: true, type: Vars.blockTypes.switch, 	 name: "Switch", angle: 0});
 new Block({preset: true, type: Vars.blockTypes.not, 	 name: "Not", angle: 0});
 new Block({preset: true, type: Vars.blockTypes.and, 	 name: "And", angle: 0});
-new Block({preset: true, type: Vars.blockTypes.or, 	 name: "Or", angle: 0});
+new Block({preset: true, type: Vars.blockTypes.or, 	 	 name: "Or", angle: 0});
+// new Block({preset: true, hidden: true, type: Vars.blockTypes.node, 	 name: "Node", angle: 0});
 wirePreset = new Wire({preset: true});
 
 // new Block({type: "switch", x:0, y:0,		name: "00",  angle: 0});

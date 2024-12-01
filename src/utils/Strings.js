@@ -17,7 +17,7 @@ const Strings = {
 	encodeNumber(num) {
 		num = Math.floor(num);
 		let result = "";
-		if(num == 0) result = urlAlphabet.charAt(0);
+		// if(num == 0) result = urlAlphabet.charAt(0);
 		if(num < 0) {
 			result = "-" + result;
 			num = -num;

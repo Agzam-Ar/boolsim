@@ -74,7 +74,6 @@ class BlockElement extends React.Component {
 		
 		let body = this.getBody();
 
-		if(Vars.selected.target == this.block) console.log("selected");
 		if(selected && border <= 0) {
 			border = .2  * Themes.theme.powerSize;
 		}

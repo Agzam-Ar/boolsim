@@ -22,6 +22,9 @@ class WireElement extends React.Component {
 
     render() {
 		let link = this.id == 'preset' ? Vars.wirePreset() : Vars.getLinks()[this.id];
+		if(link == undefined) {
+			return <path d={"M0,0"}/>;
+		}
 		let bs = Vars.getBlocks();
 
 		let from = bs[link.from];
@@ -34,10 +37,16 @@ class WireElement extends React.Component {
 		// 	console.log('Wire: ', link.from, link.fromPort);
 		// }
 
-		if(from == undefined && link.from != 'mouse') return <path d={"M0,0"}/>;
+		if(from == undefined && link.from != 'mouse') {
+			link.remove(false);
+			return <path d={"M0,0"}/>;
+		}
 		let pfrom = link.from == 'mouse' ? Vars.getSvgMousePos() : from.oPorts[link.fromPort];
 
-		if(to == undefined && link.to != 'mouse') return <path d={"M0,0"}/>;
+		if(to == undefined && link.to != 'mouse') {
+			link.remove(false);
+			return <path d={"M0,0"}/>;
+		}
 		let pto = link.to == 'mouse' ? Vars.getSvgMousePos() : to.iPorts[link.toPort];
 
 		pto.active = pfrom == undefined ? false : pfrom.active;
@@ -102,6 +111,19 @@ class WireElement extends React.Component {
         	</defs>
         	<g fill="none" className={Themes.theme.mixBlend} stroke={pfromActive ? `url(#${gradientName})` : "var(--unactive)"}  onClick={e => {
         			if(link.preset) return;
+
+        			if(Vars.selected.target == link) {
+        				let pos = Vars.getSvgMousePos();
+        				console.log("link:", link);
+        				let block = Vars.createBlock({type: Vars.blockTypes.node, x:Math.round(pos.x/Vars.tilesize), y:Math.round(pos.y/Vars.tilesize),  	name: "",  angle: 0});
+        				console.log("block:", block);
+        				let link1 = Vars.createLink({from: link.from, to:block.id, fromPort:link.fromPort, toPort:0});
+        				let link2 = Vars.createLink({from: block.id, to:link.to, fromPort:0, toPort:link.toPort});
+        				link.remove();
+						
+						Vars.renderScheme();
+        				return;
+        			}
 					Vars.selected.target = link;
 
 					Vars.selected.onKeyDown = e => {

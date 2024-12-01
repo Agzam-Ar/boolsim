@@ -153,15 +153,15 @@ function Editor() {
 					};
 					for (let key of Object.keys(keys)) {
 						let config = keys[key];
-						eElements.push(<label key={key + "-label"} htmlFor="" >{config.name}</label>);
+						eElements.push(<label key={"label-" + key} htmlFor="" >{config.name}</label>);
 						if(config.type == 'string') {
-							eElements.push(<input key={key + "-input"} type="text" value={target[key]} onChange={e => {
+							eElements.push(<input key={'input-' + key} key={key + "-input"} type="text" value={target[key]} onChange={e => {
 								target[key] = e.target.value;
 								Vars.renderScheme();
 							}}/>);
 						}
 						if(config.type == 'int') {
-							eElements.push(<input key={key + "-input"} type="number" min={config.min} max={config.max} value={target[key+"tmp"] == undefined ? target[key] : target[key+"tmp"]} onChange={e => {
+							eElements.push(<input key={'input-' + key} key={key + "-input"} type="number" min={config.min} max={config.max} value={target[key+"tmp"] == undefined ? target[key] : target[key+"tmp"]} onChange={e => {
 								let value = e.target.value;
 								target[key+"tmp"] = value;
 								if(config.min <= value && value < config.max) {
@@ -171,10 +171,10 @@ function Editor() {
 							}}/>);
 						}
 						if(config.type == 'select') {
-							eElements.push(<select value={target[key]}onChange={e => {
+							eElements.push(<select key={'select-' + key} value={target[key]} onChange={e => {
 								target[key] = e.target.value;
 								Vars.renderScheme();
-							}}>{config.variants.map(e => <option  value={e.value}>{e.name}</option>)}</select>);
+							}}>{config.variants.map(e => <option key={e.value} value={e.value}>{e.name}</option>)}</select>);
 						}
 					}
 				}
