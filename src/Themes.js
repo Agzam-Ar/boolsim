@@ -43,6 +43,7 @@ const Themes = {
 
     	frameBorderColor: "#1C0062",
     	frameBackground: "#0A0023",
+    	frameBackgroundAccent: "#0A0023",
     	frameHeadSize: "20px",
 		frameResizeGap: "4px",
     	frameHeadColor: "#050010",
@@ -67,10 +68,11 @@ const Themes = {
     	funcColor: "#fff",
     	funcAccent: "#D2D2D2",
 
-    	selectColor: "#da00ff",
+    	selectColor: "#673AB7",
 
     	frameBorderColor: "#000",
     	frameBackground: "#D2D2D2",
+    	frameBackgroundAccent: "#BBB",
     	frameColor: "#000",
     	frameHeadSize: "20px",
 		frameResizeGap: "4px",
@@ -79,6 +81,9 @@ const Themes = {
 
     	inputBackground: "#eee",
     	inputBackgroundHover: "#FFF",
+
+    	tableResultBackground: "#92ccff",
+    	tableResultBackgroundAccent: "#69b9ff",
 
 		powerSize: .75,
 		glow: false,

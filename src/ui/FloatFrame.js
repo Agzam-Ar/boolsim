@@ -1,12 +1,19 @@
 
 import Vars from '../Vars';
 import './FloatFrame.css';
+import {useState, useRef} from 'react'
 
 function FloatFrame(props) {
+ 	const [repaints, setRepaints] = useState(0);
+
 	let content = props.content == undefined ? () => [] : props.content;
 
 	let frame = props.frame;
 	
+	frame.render = () => {
+		setRepaints(() => repaints+1);
+	};
+
 	let box = frame.box;
 
 	const resize = (e, type) => {

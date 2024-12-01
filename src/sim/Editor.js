@@ -99,7 +99,7 @@ function Editor() {
 				}
 				let frame = Vars.frame("blocks-pattle");
 				let w = 30;
-				let h = 100;
+				let h = 120;
 				let raito = `${frame.box.w} / ${frame.box.h}`;
 				return <div className="block-pattle-box" style={{aspectRatio: raito}}>
 					<svg className="block-pattle" style={{aspectRatio: raito}} viewBox={`${w/-2} ${w/-2} ${w} ${h}`} xmlns="http://www.w3.org/2000/svg" id="main-svg" fill="#7a7a7a">
@@ -183,6 +183,93 @@ function Editor() {
 							
 							{/*<label htmlFor="">Input ports</label><input type="number"/>*/}
 						</div>;
+			}}/>
+
+
+			<FloatFrame frame={Vars.frame("truth-table")} title="Truth table" content={() => {
+				let frame = Vars.frame("truth-table");
+				if(frame["truth-table"] == undefined) frame["truth-table"] = {};
+				let truthtable = frame["truth-table"];
+				let head = [];
+				let inputs = [];
+				let outputs = [];
+				let idsPull = [];
+				for (let block of Object.values(Vars.getBlocks())) {
+					if(block == undefined) continue;
+					if(block.name == "") continue;
+					if(block.type == Vars.blockTypes.switch) {
+						inputs.push(block);
+						head.push({
+							name: block.name,
+							type: "i",
+						});
+						idsPull.push("" + block.id);
+					}
+				}
+				for (let block of Object.values(Vars.getBlocks())) {
+					if(block == undefined) continue;
+					if(block.name == "") continue;
+					if(block.type == Vars.blockTypes.lamp) {
+						outputs.push(block);
+						head.push({
+							name: block.name,
+							type: "o",
+						});
+						idsPull.push("" + block.id);
+					}
+				}
+				
+				let currentTableKey = "";
+				let currentRow = {};
+				for (let b of inputs) {
+					currentTableKey += "_" + b.id + "-" + (b.active?'0':'1');
+					currentRow[b.id] = b.active;
+				}
+				currentTableKey += "_o";
+				for (let b of outputs) {
+					currentTableKey += "_" + b.id + "-" + (b.active?'0':'1');
+					currentRow[b.id] = b.active;
+				}
+				truthtable[currentTableKey] = currentRow;
+				
+				let rows = [];
+				for (let rawRowKey of Object.keys(truthtable)) {
+					let rawRow = truthtable[rawRowKey];
+					let valid = true;
+					let same = 0;
+					for (let colRawKey of Object.keys(rawRow)) {
+						if(idsPull.includes(colRawKey)) {
+							same++;
+							continue;
+						}
+						valid = false;
+						break;
+					}
+					if(rawRowKey == currentTableKey) {
+						let cols = [];
+						for (let b of inputs) cols.push(<th className="truth-table-body i" key={b.id}>{rawRow[b.id] ? "1" : "0"}</th>);
+						for (let b of outputs) cols.push(<th className="truth-table-body o" key={b.id}>{rawRow[b.id] ? "1" : "0"}</th>);
+						rows.push(<tr key={rawRowKey}>{cols}</tr>);
+					}
+					else if((valid && same == idsPull.length) || rawRowKey == currentTableKey) {
+						let cols = [];
+						for (let b of inputs) cols.push(<td className="truth-table-body i" key={b.id}>{rawRow[b.id] ? "1" : "0"}</td>);
+						for (let b of outputs) cols.push(<td className="truth-table-body o" key={b.id}>{rawRow[b.id] ? "1" : "0"}</td>);
+						rows.push(<tr key={rawRowKey}>{cols}</tr>);
+					}
+				}
+				return <div className="truth-table-box">
+							<table>
+								<thead>
+								<tr>
+									{head.map((e,id) => <th className={"truth-table-head "+e.type} key={id}>{e.name}</th>)}
+								</tr>
+								</thead>
+								<tbody>
+									{rows}
+								</tbody>
+							</table>
+					   </div>;
 			}}/>
 		</div>
 

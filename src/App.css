@@ -65,3 +65,8 @@ input {
     outline: none;
     border: none;
 }
+
+select {
+    outline: none;
+    border: none;
+}

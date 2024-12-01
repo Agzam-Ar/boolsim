@@ -103,6 +103,26 @@ const decodeState = (code, props={index:0}) => {
 	return decoded;
 }
 
+const applyDecodedState = (code) => {
+	try {
+		let decoded = decodeState(code);
+		if(decoded != undefined) {
+			state = decoded;
+			nextId = 0;
+			for (let b of Object.values(state.blocks)) {
+				nextId = Math.max(nextId, b.id);
+			}
+			nextId++;
+			Vars.$renderScheme();
+			return decoded;
+		} else {
+			console.error("State not decoded");
+		}
+	} catch (e) {
+		console.log(e);
+	}
+	return undefined;
+}
 
 const addToHistory = () => {
 	historyIndex++;
@@ -133,12 +153,14 @@ let Vars = {
 		or: 		2,
 		not: 		3,
 		node:		4,
+		lamp:		5,
 	},
 	tilesize: 10,
 	nodesize: .3,
 	camera: {x:getLocalStorageItem('camera.x', 0), y:getLocalStorageItem('camera.y', 0), width: window.innerWidth, height: window.innerHeight, scale: getLocalStorageItem('camera.scale', 1/10)},
 	mouse: {draggBlock: undefined, draggStart: undefined},
 	selected: {},
+	getNextId: () => nextId,
 	createBlock: (props) => new Block(props),
 	createLink: (props) => new Wire(props),
 	getHistory: () => history,
@@ -203,6 +225,7 @@ class Frame {
 			if(k == 'x' || k == 'y' || k == 'w' || k == 'h' || k == 'minw' || k == 'minh') this.box[k] = props[k];
 			else this[k] = props[k];
 		}
+		this.render = () => {};
 	}
 	
 	hasPoint(p) {
@@ -231,6 +254,14 @@ frames["blocks-inspector"] = new Frame({
 	minw:window.innerHeight*3/40, 	minh:window.innerHeight*3/40});
 
 
+frames["truth-table"] = new Frame({
+	x:getLocalStorageItem('frame.truth-table.x', window.innerWidth- window.innerHeight*7/20),
+	y:getLocalStorageItem('frame.truth-table.y', window.innerHeight*2/20), 
+	w:getLocalStorageItem('frame.truth-table.w', window.innerHeight*3/10),
+	h:getLocalStorageItem('frame.truth-table.h', window.innerHeight*4/20), 
+	minw:window.innerHeight*3/40, 	minh:window.innerHeight*3/40});
+
+
 window["Vars"] = Vars;
 
 class Block {
@@ -246,6 +277,7 @@ class Block {
 				$props.preset = undefined;
 				$props.x = pos.x/Vars.tilesize;
 				$props.y = pos.y/Vars.tilesize;
+				$props.name = "";
 				console.log($props);
 				return new Block($props);
 			}
@@ -268,6 +300,10 @@ class Block {
 		if(type == Vars.blockTypes.switch) {
 	    	this.outputs = 1;
 	    	this.inputs  = 0;
+		}
+		if(type == Vars.blockTypes.lamp) {
+	    	this.outputs = 0;
+	    	this.inputs  = 1;
 		}
 		if(type == Vars.blockTypes.or || type == Vars.blockTypes.and) {
 	    	this.outputs = 1;
@@ -305,6 +341,12 @@ class Block {
 		this.updatePorts();
 	}
 
+
+	setActive(active) {
+		this.active = active;
+		this.update();
+		Vars.frame("truth-table").render();
+	}
 
 	static decode(code, props) {
 		let block = {x:0,y:0};
@@ -349,6 +391,8 @@ class Block {
 	update() {
 		this.updatePorts();
 		
+		
+
 		for (let l of Object.values(this.listeners)) {
 			if(l != undefined) l();
 		}
@@ -389,6 +433,14 @@ class Block {
 		if(this.type == Vars.blockTypes.switch) {
 			for (var i = 0; i < this.oPorts.length; i++) {
 				this.oPorts[i].active = this.active;
+			}
+		}
+		if(this.type == Vars.blockTypes.lamp) {
+			this.active = false;
+			for (var i = 0; i < this.iPorts.length; i++) {
+				if(!this.iPorts[i].active) continue;
+				this.active = true;
+				break;
 			}
 		}
 		if(this.type == Vars.blockTypes.or) {
@@ -553,6 +605,10 @@ class Wire {
 			this.remove();
 			return;
 		}
+		if(from.oPorts[this.fromPort] == undefined) {
+			this.remove();
+			return;
+		}
 		to.iPorts[this.toPort].active = from.oPorts[this.fromPort].active;
 		to.update();
 	}
@@ -604,20 +660,21 @@ window.addEventListener('keydown', e => {
 		}
 		if(e.code == 'KeyO') {
 			try {
-				let decoded = decodeState(window.location.hash.substring(1));
-				console.log("Decoded state", decoded);
-				if(decoded != undefined) {
-					state = decoded;
-					nextId = 0;
-					for (let b of Object.values(state.blocks)) {
-						nextId = Math.max(nextId, b.id);
-					}
-					nextId++;
-					Vars.$renderScheme();
-					console.log("Successfully opened!");
-				} else {
-					console.error("State not decoded");
-				}
+				applyDecodedState(window.location.hash.substring(1));
+				// let decoded = decodeState(window.location.hash.substring(1));
+				// console.log("Decoded state", decoded);
+				// if(decoded != undefined) {
+				// 	state = decoded;
+				// 	nextId = 0;
+				// 	for (let b of Object.values(state.blocks)) {
+				// 		nextId = Math.max(nextId, b.id);
+				// 	}
+				// 	nextId++;
+				// 	Vars.$renderScheme();
+				// 	console.log("Successfully opened!");
+				// } else {
+				// 	console.error("State not decoded");
+				// }
 			} catch (e) {
 				console.log(e);
 			}
@@ -820,6 +877,8 @@ new Block({preset: true, type: Vars.blockTypes.switch, 	 name: "Switch", angle: 
 new Block({preset: true, type: Vars.blockTypes.not, 	 name: "Not", angle: 0});
 new Block({preset: true, type: Vars.blockTypes.and, 	 name: "And", angle: 0});
 new Block({preset: true, type: Vars.blockTypes.or, 	 	 name: "Or", angle: 0});
+new Block({preset: true, type: Vars.blockTypes.lamp, 	 name: "Lamp", angle: 0});
+
 // new Block({preset: true, hidden: true, type: Vars.blockTypes.node, 	 name: "Node", angle: 0});
 wirePreset = new Wire({preset: true});
 
@@ -830,8 +889,9 @@ let needExample = true;
 if(window.location.hash.length > 1) {
 	needExample = false;
 	try {
-		let decoded = decodeState(window.location.hash.substring(1));
-		console.log("Decoded state", decoded);
+
+		let decoded = applyDecodedState(window.location.hash.substring(1));//decodeState(window.location.hash.substring(1));
+		// console.log("Decoded state", decoded);
 		if(decoded == undefined) {
 			needExample = true;
 		} else {

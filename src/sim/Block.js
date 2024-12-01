@@ -262,9 +262,14 @@ class BlockElement extends React.Component {
 			<rect class="no-events" x={left} y={top} width={box.w} height={box.h}></rect>
 			<circle stroke={this.block.active ? "inherit" : "var(--func-accent)"} className={this.block.preset ? "no-events" : "clickable"} r={Math.min(box.w, box.h)*.25} onClick={() => {
 				if(this.block.preset) return;
-				this.block.active = !this.block.active;
-				this.block.update();
+				this.block.setActive(!this.block.active);
+				// this.block.update();
 			}}></circle>
+		</g>;
+
+		if(type == Vars.blockTypes.lamp) return <g>
+			<circle class="no-events" fill={this.block.active ? "url(#gradient)" : "inherit"} r={Math.min(box.w, box.h)/2}></circle>
+			{/*<circle stroke={this.block.active ? "inherit" : "var(--func-accent)"} className={this.block.preset ? "no-events" : "clickable"} r={Math.min(box.w, box.h)*.25}></circle>*/}
 		</g>;
 
 

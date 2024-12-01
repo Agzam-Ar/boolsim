@@ -69,7 +69,7 @@ svg.block-pattle:hover {
 	padding: .1em .1em;
 }
 
-.inspector-box > input {
+.inspector-box > input, .inspector-box > select {
 	color: var(--frame-color);
 	background: var(--input-background);
 	padding: .25em 1em calc(.25em + 1px)  1em;
@@ -77,16 +77,54 @@ svg.block-pattle:hover {
 	box-shadow: 0 -1px 0 -1px var(--select-color) inset;
 }
 
+.inspector-box > select {
+	border-right: .5em var(--input-background) solid;
+}
+
 .inspector-box > input:hover {
 	background: var(--input-background-hover);
+}
+.inspector-box > select:hover {
+	background: var(--input-background-hover);
+	border-right: .5em var(--input-background) solid;
 }
 .inspector-box > input:focus {
 	box-shadow: 0 -1px 0 1px var(--select-color) inset;
 }
 
+.truth-table-box {
+	display: flex;
+    justify-content: space-evenly;
+    align-items: stretch;
+    flex-direction: column;
+}
+
+.truth-table-box > table {
+	border-spacing: 0;
+}
+
+.truth-table-head {
+
+}
+.truth-table-body {
+
+}
+
+.truth-table-head:nth-child(even), .truth-table-body:nth-child(even) {
+	background: var(--frame-background-accent);
+}
+
+.truth-table-head.o, .truth-table-body.o {
+	background: var(--table-result-background);
+}
+.truth-table-head.o:nth-child(even), .truth-table-body.o:nth-child(even) {
+	background: var(--table-result-background-accent);
+}
+
 .mix-blend-plus-lighter {
 	mix-blend-mode: plus-lighter;
 }
+
 
 circle {
 /*	transition: .5s ease-in-out;*/
