@@ -48,6 +48,16 @@ function FloatFrame(props) {
 							Vars.mouse.draggLastPos = pos;
 							Vars.mouse.draggBlockPos = {x:x, y:frame.box.y};
 							Vars.mouse.draggBlock = frame;
+						}} onTouchStart={e => {
+							e.clientX = e.targetTouches[0].clientX;
+							e.clientY = e.targetTouches[0].clientY;
+							let pos = {x:e.clientX, y:e.clientY};//Vars.toSvgPoint(e);
+							console.log(e);
+							Vars.mouse.draggType = 'move-frame';
+							Vars.mouse.draggStart = pos;
+							Vars.mouse.draggLastPos = pos;
+							Vars.mouse.draggBlockPos = {x:x, y:frame.box.y};
+							Vars.mouse.draggBlock = frame;
 						}}>{props.title}</div>
 						<div className="content-box" style={{left: `${x}px`, top: `${box.y}px`, width: `${box.w}px`, height: `calc(${box.h}px - var(--frame-head-size))`}}>{content()}</div>
 					</div>

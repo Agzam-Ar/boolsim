@@ -702,15 +702,19 @@ window.addEventListener('unload', e => {
 window.addEventListener('click', e => {
 });
 
-window.addEventListener('mousedown', e => {
+const onMouseDown = e => {
 	Vars.mouse.clickTarget = e.target;
-});
+}
 
-window.addEventListener('mousemove', e => {
+window.addEventListener('mousedown', e => onMouseDown(e));
+window.addEventListener('touchstart', e => onMouseDown(e));
+
+
+const onMouseMove = e => {
 	Vars.mouse.client = {x: e.clientX, y: e.clientY};
 	let pos = Vars.toSvgPoint(e);
 	Vars.mouse.canvasPos = Vars.getSvgMousePos();//pos;
-	if(e.buttons > 0) {
+	if(e.buttons > 0 || e.mobile) {
 		if(Vars.mouse.draggType == 'move-camera') {
 			pos = {x: e.clientX, y: e.clientY};
 			let x = Vars.mouse.draggBlockPos.x - (pos.x - Vars.mouse.draggStart.x)*Vars.camera.scale;
@@ -785,9 +789,21 @@ window.addEventListener('mousemove', e => {
 			}
 		}
 	}
+}
+window.addEventListener('mousemove', e => {
+	e.mobile = false;
+	 onMouseMove(e);
+});
+window.addEventListener('touchmove', e => {
+	e.mobile = true;
+	e.clientX = e.targetTouches[0].clientX;
+	e.clientY = e.targetTouches[0].clientY;
+	onMouseMove(e);
 });
 
-window.addEventListener('mouseup', e => {
+const onMouseUp = e => {
+// }
+// window.addEventListener('mouseup', e => {
 	if(Vars.mouse.draggType == 'move-block') {
 		let x = Vars.mouse.draggBlock.box.x;
 		let y = Vars.mouse.draggBlock.box.y;
@@ -833,6 +849,13 @@ window.addEventListener('mouseup', e => {
 	}
 
 	Vars.renderScheme();
+};
+window.addEventListener('mouseup', e => onMouseUp(e));
+window.addEventListener('touchend', e => {
+	e.mobile = true;
+	e.clientX = e.changedTouches[0].clientX;
+	e.clientY = e.changedTouches[0].clientY;
+	onMouseUp(e);
 });
 
 

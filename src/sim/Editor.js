@@ -69,6 +69,16 @@ function Editor() {
 				Vars.mouse.draggBlockPos = {x:Vars.camera.x, y:Vars.camera.y};
 				Vars.mouse.draggLastPos = pos;
 			}
+		}} onTouchStart={e => {
+			e.clientX = e.targetTouches[0].clientX;
+			e.clientY = e.targetTouches[0].clientY;
+			if(e.target != ref.current) return;
+			let pos = Vars.toSvgPoint(e);
+			pos = {x: e.clientX, y: e.clientY};
+			Vars.mouse.draggType = "move-camera";
+			Vars.mouse.draggStart = pos;
+			Vars.mouse.draggBlockPos = {x:Vars.camera.x, y:Vars.camera.y};
+			Vars.mouse.draggLastPos = pos;
 		}} ref={ref} style={{
 			aspectRatio: `${Vars.camera.width}/${Vars.camera.height}`,
 		}} viewBox={`${viewBoxX} ${viewBoxY} ${viewBoxW} ${viewBoxH}`} xmlns="http://www.w3.org/2000/svg" id="main-svg" className="editor-box" fill="#7a7a7a">
@@ -273,7 +283,6 @@ function Editor() {
 					}
 				}
 				rows.sort((r1,r2) => r1.sort-r2.sort);
-				console.log(rows);
 				return <div className="truth-table-box">
 							<table>
 								<thead>
