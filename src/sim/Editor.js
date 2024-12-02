@@ -318,7 +318,7 @@ function Editor() {
 					{eWiresOverlay}
 				</g>
 				{eBlocksOverlay}
-				<text x="0" y="0" fill="#f00">{Vars.mouse.draggType == undefined ? "none" : Vars.mouse.draggType}</text>
+				{/*<text x="0" y="0" fill="#f00">{Vars.mouse.draggType == undefined ? "none" : Vars.mouse.draggType}</text>*/}
 		</svg>
 	</div>
 }

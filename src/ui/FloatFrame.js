@@ -1,5 +1,6 @@
 
 import Vars from '../Vars';
+import Events from '../utils/Events';
 import './FloatFrame.css';
 import {useState, useRef} from 'react'
 
@@ -31,9 +32,9 @@ function FloatFrame(props) {
 
 	return <div className="floatframe" style={{left: `${x}px`, top: `${box.y}px`, width: `${box.w}px`, height: `${box.h}px`}}>
 				<div className="frame-resize-hbox t">
-					<div className="frame-resize corner tl" onMouseDown={e => resize(e, 'tl')}></div>
-					<div className="frame-resize hline t" onMouseDown={e => resize(e, 't')}></div>
-					<div className="frame-resize corner tr" onMouseDown={e => resize(e, 'tr')}></div>
+					<div className="frame-resize corner tl" onMouseDown={e => resize(e, 'tl')} onTouchStart={e => Events.toMouse(e, e=>resize(e, 'tl'))}></div>
+					<div className="frame-resize hline t"   onMouseDown={e => resize(e, 't')}  onTouchStart={e => Events.toMouse(e, e=>resize(e, 't' ))}></div>
+					<div className="frame-resize corner tr" onMouseDown={e => resize(e, 'tr')} onTouchStart={e => Events.toMouse(e, e=>resize(e, 'tr'))}></div>
 				</div>
 				<div className="frame-hbox">
 					<div className="frame-resize-vbox l">
@@ -66,9 +67,9 @@ function FloatFrame(props) {
 					</div>
 				</div>
 				<div className="frame-resize-hbox b">
-					<div className="frame-resize corner dl" onMouseDown={e => resize(e, 'dl')}></div>
-					<div className="frame-resize hline d" onMouseDown={e => resize(e, 'd')}></div>
-					<div className="frame-resize corner dr" onMouseDown={e => resize(e, 'dr')}></div>
+					<div className="frame-resize corner dl" onMouseDown={e => resize(e, 'dl')} onTouchStart={e => Events.toMouse(e, e=>resize(e, 'dl'))}></div>
+					<div className="frame-resize hline d"   onMouseDown={e => resize(e, 'd')}  onTouchStart={e => Events.toMouse(e, e=>resize(e, 'd' ))}></div>
+					<div className="frame-resize corner dr" onMouseDown={e => resize(e, 'dr')} onTouchStart={e => Events.toMouse(e, e=>resize(e, 'dr'))}></div>
 				</div>
 			</div>;
 }
