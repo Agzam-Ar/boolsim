@@ -707,13 +707,16 @@ const onMouseDown = e => {
 }
 
 window.addEventListener('mousedown', e => onMouseDown(e));
-window.addEventListener('touchstart', e => onMouseDown(e));
+window.addEventListener('touchstart', e => {
+	onMouseDown(e);
+	console.log("touchstart");
+});
 
 
 const onMouseMove = e => {
 	Vars.mouse.client = {x: e.clientX, y: e.clientY};
 	let pos = Vars.toSvgPoint(e);
-	Vars.mouse.canvasPos = Vars.getSvgMousePos();//pos;
+	Vars.mouse.canvasPos = Vars.getSvgMousePos();
 	if(e.buttons > 0 || e.mobile) {
 		if(Vars.mouse.draggType == 'move-camera') {
 			pos = {x: e.clientX, y: e.clientY};
@@ -726,14 +729,18 @@ const onMouseMove = e => {
 			return;
 		}
 		if(Vars.mouse.draggType == 'move-block') { //Vars.mouse.draggBlock != undefined) {
+			console.log("moveing");
 			let x = Vars.mouse.draggBlockPos.x + pos.x - Vars.mouse.draggStart.x;
 			let y = Vars.mouse.draggBlockPos.y + pos.y - Vars.mouse.draggStart.y;
+			console.log("moving", x, y);
 			Vars.mouse.draggBlock.box.x = x;
 			Vars.mouse.draggBlock.box.y = y;
 			Vars.mouse.draggBlock.updatePorts();
 			Vars.renderScheme();
 			Vars.mouse.draggLastPos = pos;
-			Vars.mouse.draggBlock.overlay = true;
+			// TODO: event looses then block changes parent element
+			if(!e.mobile) Vars.mouse.draggBlock.overlay = true;
+			console.log(e);
 		}
 		if(Vars.mouse.draggType == 'create-wire') { //Vars.mouse.draggBlock != undefined) {
 			// let x = Vars.mouse.draggBlockPos.x + pos.x - Vars.mouse.draggStart.x;
@@ -795,15 +802,19 @@ window.addEventListener('mousemove', e => {
 	 onMouseMove(e);
 });
 window.addEventListener('touchmove', e => {
+	console.log('move');
 	e.mobile = true;
-	e.clientX = e.targetTouches[0].clientX;
-	e.clientY = e.targetTouches[0].clientY;
+	e.clientX = e.touches[0].clientX;
+	e.clientY = e.touches[0].clientY;
 	onMouseMove(e);
+});
+window.addEventListener('touchcancel', e => {
+	console.log('touchcancel', e);
 });
 
 const onMouseUp = e => {
-// }
-// window.addEventListener('mouseup', e => {
+	console.log("onMouseUp");
+	console.log(Vars.mouse.draggType);
 	if(Vars.mouse.draggType == 'move-block') {
 		let x = Vars.mouse.draggBlock.box.x;
 		let y = Vars.mouse.draggBlock.box.y;
@@ -852,6 +863,7 @@ const onMouseUp = e => {
 };
 window.addEventListener('mouseup', e => onMouseUp(e));
 window.addEventListener('touchend', e => {
+	console.log("onMouseUp");
 	e.mobile = true;
 	e.clientX = e.changedTouches[0].clientX;
 	e.clientY = e.changedTouches[0].clientY;

@@ -29,7 +29,7 @@ function FloatFrame(props) {
 	let x = box.x;
 	if(box.x + box.w > window.innerWidth) x  = window.innerWidth - box.w;
 
-	return  <div className="floatframe" style={{left: `${x}px`, top: `${box.y}px`, width: `${box.w}px`, height: `${box.h}px`}}>
+	return <div className="floatframe" style={{left: `${x}px`, top: `${box.y}px`, width: `${box.w}px`, height: `${box.h}px`}}>
 				<div className="frame-resize-hbox t">
 					<div className="frame-resize corner tl" onMouseDown={e => resize(e, 'tl')}></div>
 					<div className="frame-resize hline t" onMouseDown={e => resize(e, 't')}></div>

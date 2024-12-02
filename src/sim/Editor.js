@@ -5,6 +5,7 @@ import WireElement from './Wire';
 import Vars from '../Vars';
 import Themes from '../Themes'
 import FloatFrame from '../ui/FloatFrame';
+import Events from '../utils/Events';
 import {useState, useRef} from 'react'
 import { FaPlay } from "react-icons/fa6";
 
@@ -58,28 +59,20 @@ function Editor() {
 		}
 	}
 
-	return <div className="editor-box">
-		<svg onMouseDown={e => {
-			if(e.target != ref.current) return;
-			if(e.button == 1 || e.button == 2) {
-				let pos = Vars.toSvgPoint(e);
-				pos = {x: e.clientX, y: e.clientY};
-				Vars.mouse.draggType = "move-camera";
-				Vars.mouse.draggStart = pos;
-				Vars.mouse.draggBlockPos = {x:Vars.camera.x, y:Vars.camera.y};
-				Vars.mouse.draggLastPos = pos;
-			}
-		}} onTouchStart={e => {
-			e.clientX = e.targetTouches[0].clientX;
-			e.clientY = e.targetTouches[0].clientY;
-			if(e.target != ref.current) return;
+	const moveCameraListener = e => {
+		if(e.target != ref.current) return;
+		if(e.button == 1 || e.button == 2 || e.mobile) {
 			let pos = Vars.toSvgPoint(e);
 			pos = {x: e.clientX, y: e.clientY};
 			Vars.mouse.draggType = "move-camera";
 			Vars.mouse.draggStart = pos;
 			Vars.mouse.draggBlockPos = {x:Vars.camera.x, y:Vars.camera.y};
 			Vars.mouse.draggLastPos = pos;
-		}} ref={ref} style={{
+		}
+	}
+
+	return <div className="editor-box">
+		<svg onMouseDown={e => moveCameraListener(e)} onTouchStart={e => Events.toMouse(e, moveCameraListener)} ref={ref} style={{
 			aspectRatio: `${Vars.camera.width}/${Vars.camera.height}`,
 		}} viewBox={`${viewBoxX} ${viewBoxY} ${viewBoxW} ${viewBoxH}`} xmlns="http://www.w3.org/2000/svg" id="main-svg" className="editor-box" fill="#7a7a7a">
 			<defs>
@@ -325,6 +318,7 @@ function Editor() {
 					{eWiresOverlay}
 				</g>
 				{eBlocksOverlay}
+				<text x="0" y="0" fill="#f00">{Vars.mouse.draggType == undefined ? "none" : Vars.mouse.draggType}</text>
 		</svg>
 	</div>
 }

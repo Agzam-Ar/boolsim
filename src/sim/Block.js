@@ -91,8 +91,25 @@ class BlockElement extends React.Component {
 					console.log("Down");
 					Vars.renderScheme();
         		}}
+			onTouchStart={e => {
+				e.clientX = e.targetTouches[0].clientX;
+				e.clientY = e.targetTouches[0].clientY;
+				let block = this.block;
 
-        		onMouseDown={e => {
+				let pos = Vars.toSvgPoint(e);
+
+				if(this.block.preset) {
+        			block = this.block.createBlock();
+        			pos = Vars.getSvgMousePos();
+				}
+				Vars.mouse.draggType = 'move-block';
+				Vars.mouse.draggStart = pos;
+				Vars.mouse.draggLastPos = pos;
+				Vars.mouse.draggBlockPos = {x:block.box.x, y:block.box.y};
+				Vars.mouse.draggBlock = block;
+				// console.log("Type", pos);
+			}}
+        	onMouseDown={e => {
 				let block = this.block;
 
 				let pos = Vars.toSvgPoint(e);
