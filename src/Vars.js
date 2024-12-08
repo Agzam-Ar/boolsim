@@ -155,8 +155,8 @@ let Vars = {
 		node:		4,
 		lamp:		5,
 	},
+	propsCount: propsCount,
 	tilesize: 10,
-	nodesize: .3,
 	camera: {x:getLocalStorageItem('camera.x', 0), y:getLocalStorageItem('camera.y', 0), width: window.innerWidth, height: window.innerHeight, scale: getLocalStorageItem('camera.scale', 1/10)},
 	mouse: {draggBlock: undefined, draggStart: undefined},
 	selected: {},
@@ -186,10 +186,14 @@ let Vars = {
 		}
 		Vars.$renderScheme();
 	},
-
+	
+	updates: 0,
+	nextUpdate: () => Vars.updates++,
 	updateBlocks: () => {
+		let update = Vars.nextUpdate();
+		// console.log('globalupdate', update);
 		for (let b of Object.values(Vars.getBlocks())) {
-			if(b != undefined) b.update();
+			if(b != undefined) b.update(update);
 		}
 	},
 
@@ -269,6 +273,7 @@ class Block {
 	constructor(props) {
 		this.classType = "Block";
 		this.overlay = false;
+		this.loopsStack = 0;
 		if(props.preset == true) {
 			this.id = `preset-${blocksPattle.length}`;
 			blocksPattle.push(this);
@@ -389,13 +394,32 @@ class Block {
 		if(this.elementListener != undefined) this.elementListener();
 	}
 
-	update() {
+	update(updateId) {
+		if(updateId == this.lastUpdate) {
+			this.loopsStack++;
+			if(this.loopsStack > this.iPorts.length+10) {
+				return;
+			}
+		}
+		this.loopsStack = 0;
+		this.lastUpdate = updateId;
+
+		let state = [];
+		for (var i = 0; i < this.oPorts.length; i++) {
+			state.push(this.oPorts[i].active);
+		}
 		this.updatePorts();
 		
+		let changed = false;
+		for (var i = 0; i < this.oPorts.length; i++) {
+			if(this.oPorts[i].active != state[i]) {
+				changed = true;
+				break;
+			}
+		}
 		
-
 		for (let l of Object.values(this.listeners)) {
-			if(l != undefined) l();
+			if(l != undefined) l(updateId);
 		}
 	}
 
@@ -572,6 +596,7 @@ class Wire {
 
 	constructor(props) {
 		this.blocks = Vars.getBlocks();
+		this.loopsStack = 0;
 		for(let k of Object.keys(props)) {
 			if(k == 'x' || k == 'y') {
 				this.box[k] = props[k]*Vars.tilesize;
@@ -583,15 +608,18 @@ class Wire {
 		this.id = `wire${this.from}p${this.fromPort}to${this.to}p${this.toPort}`; 
 		Vars.getLinks()[this.id] = this;
 
-		if(this.blocks[this.from] != undefined) {
-			this.blocks[this.from].listeners['linkUpdateTo' + this.id] = () => {this.update()};
-		} else {
-			console.warn("block is undefined");
-		}
+		this.addListeners();
 		
 	}
 
-	update() {
+	update(updateId) {
+		if(updateId == this.lastUpdate) {
+			this.loopsStack++;
+			//return;
+		}
+		this.loopsStack = 0;
+		this.lastUpdate = updateId;
+
 		if(this.preset) return;
 		
 		let from  = Vars.getBlocks()[this.from];
@@ -611,15 +639,27 @@ class Wire {
 			return;
 		}
 		to.iPorts[this.toPort].active = from.oPorts[this.fromPort].active;
-		to.update();
+		to.update(updateId);
+	}
+	
+
+	addListeners() {
+		if(this.blocks[this.from] != undefined && this.id != undefined) {
+			this.blocks[this.from].listeners['linkUpdateTo' + this.id] = (uid) => {this.update(uid)};
+		} else {
+			console.warn("block is undefined");
+		}
+	}
+	removeListeners() {
+		if(Vars.getBlocks()[this.from] != undefined) Vars.getBlocks()[this.from].listeners['linkUpdateTo' + this.id] = undefined;
 	}
 
 	remove(rerender=true) {
 		Vars.getLinks()[this.id] = undefined;
-		if(Vars.getBlocks()[this.from] != undefined) Vars.getBlocks()[this.from].listeners['linkUpdateTo' + this.id] = undefined;
+		this.removeListeners();
 		if(rerender) Vars.renderScheme();
 	}
-
+	
 
 	static decode(code, props) {
 		let wire = {blocks: props.state.blocks};
@@ -639,7 +679,21 @@ class Wire {
 		encoded += Strings.encodeNumber(this.toPort);
 		return encoded;
 	}
+	
 
+	setFrom(from, fromPort) {
+		this.removeListeners();
+		this.from = from;
+		this.fromPort = fromPort;
+		if(from != 'mouse') this.addListeners();
+	}
+
+	setTo(to, toPort) {
+		this.removeListeners();
+		this.to = to;
+		this.toPort = toPort;
+		if(to != 'mouse') this.addListeners();
+	}
 }
 
 
@@ -652,6 +706,10 @@ window.addEventListener('keydown', e => {
 			state = history[historyIndex];
 			console.log(historyIndex);
 			Vars.$renderScheme();
+		}
+		if(e.code == 'KeyP') {
+			Vars.export('svg');
+			e.preventDefault();
 		}
 		if(e.code == 'KeyS') {
 			let encoded = encodeState(Vars.getState());
@@ -740,7 +798,6 @@ const onMouseMove = e => {
 			Vars.mouse.draggLastPos = pos;
 			// TODO: event looses then block changes parent element
 			if(!e.mobile) Vars.mouse.draggBlock.overlay = true;
-			console.log(e);
 		}
 		if(Vars.mouse.draggType == 'create-wire') { //Vars.mouse.draggBlock != undefined) {
 			// let x = Vars.mouse.draggBlockPos.x + pos.x - Vars.mouse.draggStart.x;
@@ -813,8 +870,6 @@ window.addEventListener('touchcancel', e => {
 });
 
 const onMouseUp = e => {
-	console.log("onMouseUp");
-	console.log(Vars.mouse.draggType);
 	if(Vars.mouse.draggType == 'move-block') {
 		let x = Vars.mouse.draggBlock.box.x;
 		let y = Vars.mouse.draggBlock.box.y;
@@ -981,6 +1036,61 @@ addToHistory();
 // new Wire({from:$or.id, to:$and.id, fromPort:0, toPort:0});
 // new Wire({from:$x3.id, to:$not.id, fromPort:0, toPort:0});
 // new Wire({from:$not.id, to:$and.id, fromPort:0, toPort:1});
+
+
+
+Vars.export = (format) => {
+    let mainSvg = document.getElementById('main-svg');
+    // console.log(mainSvg);
+    // zone.maxX = Math.max(zone.maxX, EditorState.schemeNode.width());
+    // console.log( zone.maxX, EditorState.schemeNode.width());
+    // mainSvg.setAttribute("fill", "#000");
+    // mainSvg.setAttribute("stroke", "#000");
+    // mainSvg.setAttribute("font-family", "monospace");
+    // mainSvg.setAttribute("viewBox", `${zone.minX} ${zone.minY} ${(zone.maxX-zone.minX)} ${(zone.maxY-zone.minY)}`);
+    // canvas.current.setAttribute("fill", "#000");
+    // canvas.current.setAttribute("stroke", "#000");
+    // let oldGAttributes = [];
+    // let groups = mainSvg.getElementsByTagName('g');
+    // for (let g of groups) {
+    //     oldGAttributes.push(g.getAttribute('stroke'));
+    //     g.setAttribute("stroke", "#000");
+    // }
+    const saveFile = (url) => {
+        const a = document.createElement('a');
+        a.style.display = 'none';
+        a.href = url;
+        a.download = 'scheme.' + format;
+        document.body.appendChild(a);
+        a.click();
+        window.URL.revokeObjectURL(url);
+        // for (var i = 0; i < groups.length; i++) {
+        //     groups[i].setAttribute("stroke", oldGAttributes[i]);
+        // }
+        // canvas.current.setAttribute("fill", "#fff");
+        // canvas.current.setAttribute("stroke", "#7a7a7a");
+        // mainSvg.setAttribute("fill", "#7a7a7a");
+        // mainSvg.setAttribute("stroke", "#7a7a7a");
+        // EditorState.repaint();
+        // let scale = Math.max((zone.maxX-zone.minX) / width, (zone.maxY-zone.minY) / height);
+        // mainSvg.setAttribute("viewBox", `${zone.minX} ${zone.minY} ${width*scale} ${height*scale}`);
+    };
+    
+    if(format == 'svg') {
+        saveFile(`data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(mainSvg.outerHTML)))}`);
+        return;
+    }
+};
+
+
+
+
+
+
+
+
+
+
 
 
 export default Vars;

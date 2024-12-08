@@ -51,10 +51,12 @@ const Themes = {
 
 
 		powerSize: .5,
+		nodeSize: .3,
 		glow: true,
 		powerBorderSize: 0,
 
 		mixBlend: "mix-blend-plus-lighter",
+		standart: false,
 	},
 
 	simple: {
@@ -87,10 +89,12 @@ const Themes = {
     	tableResultBackgroundAccent: "#69b9ff",
 
 		powerSize: .75,
+		nodeSize: .3,
 		glow: false,
 		powerBorderSize: 2,
 		powerBorderColor: "#000000",
 		mixBlend: "",
+		standart: false,
 	},
 
 	simpleDark: {
@@ -118,14 +122,56 @@ const Themes = {
     	inputBackgroundHover: "#444",
 
 		powerSize: .75,
+		nodeSize: .3,
 		glow: false,
 		powerBorderSize: 2,
 		powerBorderColor: "#000000",
 		mixBlend: "",
+		standart: false,
+	},
+
+	scheme: {
+    	backgroundMain: "#fff",
+    	backgroundAccent: "#fff",
+    	unactive: "#000",
+    	power0: "#000",
+    	power50: "#000",
+    	power100: "#000",
+    	labelColor: "#000",
+    	funcColor: "#fff",
+    	funcAccent: "#D2D2D2",
+
+    	selectColor: "#673AB7",
+
+    	frameBorderColor: "#000",
+    	frameBorderColorLight: "#777",
+    	frameBackground: "#D2D2D2",
+    	frameBackgroundAccent: "#BBB",
+    	frameColor: "#000",
+    	frameHeadSize: "20px",
+		frameResizeGap: "4px",
+    	frameHeadColor: "#777",
+    	frameHeadColorAccent: "#888",
+
+    	inputBackground: "#eee",
+    	inputBackgroundHover: "#FFF",
+
+    	tableResultBackground: "#92ccff",
+    	tableResultBackgroundAccent: "#69b9ff",
+
+		powerSize: .75,
+		nodeSize: .75,
+		glow: false,
+		powerBorderSize: 0,
+		powerBorderColor: "#000000",
+		mixBlend: "",
+		standart: true,
 	},
 	
 	
 };
+
+window["Themes"] = Themes;
 
 
 Themes.apply(Themes.simple);
@@ -137,7 +183,8 @@ window.addEventListener("keydown", (e) => {
 		if(e.key == '1') Themes.apply(Themes.space);
 		if(e.key == '2') Themes.apply(Themes.simple);
 		if(e.key == '3') Themes.apply(Themes.simpleDark);
-		if(e.key == '1' || e.key == '2' || e.key == '3') e.preventDefault();
+		if(e.key == '4') Themes.apply(Themes.scheme);
+		if(e.key == '1' || e.key == '2' || e.key == '3' || e.key == '4') e.preventDefault();
 	}
 });
 

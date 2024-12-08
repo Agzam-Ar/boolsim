@@ -101,15 +101,16 @@ class WireElement extends React.Component {
 			border = .2  * Themes.theme.powerSize;
 		}
 		
-        return (<g stroke={pfromActive ? "#ff00aa" : "var(--unactive)"}>
+        return (<g stroke={pfromActive ? "#ff00aa" : Themes.theme.unactive}>
         	<defs>
 				<linearGradient id={gradientName} spreadMethod="pad" gradientUnits="userSpaceOnUse" x1={x1} y1={y1} x2={x2} y2={y2}>
-					<stop offset="0%" stopColor="var(--power100)" stopOpacity="1"></stop>
-					<stop offset="50%" stopColor="var(--power0)" stopOpacity="1"></stop>
-					<stop offset="100%" stopColor="var(--power100)" stopOpacity="1"></stop>
+					<stop offset="0%" stopColor={Themes.theme.power100} stopOpacity="1"></stop>
+					<stop offset="50%" stopColor={Themes.theme.power0} stopOpacity="1"></stop>
+					<stop offset="100%" stopColor={Themes.theme.power100} stopOpacity="1"></stop>
 				</linearGradient>
         	</defs>
-        	<g fill="none" className={Themes.theme.mixBlend} stroke={pfromActive ? `url(#${gradientName})` : "var(--unactive)"}  onClick={e => {
+			{/*{<text className="label" x={cx} y={cy} stroke="none">{link.loopsStack+""}</text>}*/}
+        	<g fill="none" className={Themes.theme.mixBlend} stroke={pfromActive ? `url(#${gradientName})` : Themes.theme.unactive}  onClick={e => {
         			if(link.preset) return;
 
         			if(Vars.selected.target == link) {
@@ -134,10 +135,10 @@ class WireElement extends React.Component {
 					console.log("Down");
 					Vars.renderScheme();
         		}}>
-        		{selected ? <circle strokeWidth={border+1} stroke={Themes.theme.selectColor} fill={Themes.theme.selectColor} cx={x1} cy={y1} r={Vars.nodesize}></circle> : undefined}
-        		{selected ? <circle strokeWidth={border+1} stroke={Themes.theme.selectColor} fill={Themes.theme.selectColor} cx={x2} cy={y2} r={Vars.nodesize}></circle> : undefined}
+        		{selected ? <circle strokeWidth={border+1} stroke={Themes.theme.selectColor} fill={Themes.theme.selectColor} cx={x1} cy={y1} r={Themes.theme.nodeSize}></circle> : undefined}
+        		{selected ? <circle strokeWidth={border+1} stroke={Themes.theme.selectColor} fill={Themes.theme.selectColor} cx={x2} cy={y2} r={Themes.theme.nodeSize}></circle> : undefined}
         		{selected ? <path strokeWidth={border+1} stroke={Themes.theme.selectColor} d={d}/> : []}
-        		{border > 0 ? <path strokeWidth={border} stroke="var(--power-border-color)" d={d}/> : (<g></g>)}
+        		{border > 0 ? <path strokeWidth={border} stroke={Themes.theme.powerBorderColor} d={d}/> : (<g></g>)}
         		<path d={d}/>
         		{glow ? <path className="bloor1 no-events" d={d}/> : (<g></g>)}
         		{glow ? <path className="bloor2 no-events" d={d}/> : (<g></g>)}

@@ -74,18 +74,18 @@ function Editor() {
 	return <div className="editor-box">
 		<svg onMouseDown={e => moveCameraListener(e)} onTouchStart={e => Events.toMouse(e, moveCameraListener)} ref={ref} style={{
 			aspectRatio: `${Vars.camera.width}/${Vars.camera.height}`,
-		}} viewBox={`${viewBoxX} ${viewBoxY} ${viewBoxW} ${viewBoxH}`} xmlns="http://www.w3.org/2000/svg" id="main-svg" className="editor-box" fill="#7a7a7a">
+		}} viewBox={`${viewBoxX} ${viewBoxY} ${viewBoxW} ${viewBoxH}`} xmlns="http://www.w3.org/2000/svg" id="main-svg" className="editor-box" fill="#7a7a7a" fontSize="3" textAnchor="middle"	dominantBaseline="middle">
 			<defs>
 				<linearGradient id="gradient" x1="0%" y1="0%" x2="0%" y2="100%">
-					<stop offset="0%" stopColor="var(--power0)" />
-					<stop offset="100%" stopColor="var(--power100)" />
+					<stop offset="0%" stopColor={Themes.theme.power0}/>
+					<stop offset="100%" stopColor={Themes.theme.power100} />
 				</linearGradient>
 				<linearGradient id="path-gradient" spreadMethod="pad" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="-10">
-					<stop offset="0%" stopColor="var(--power0)" />
-					<stop offset="100%" stopColor="var(--power100)" />
+					<stop offset="0%" stopColor={Themes.theme.power0}/>
+					<stop offset="100%" stopColor={Themes.theme.power100} />
 				</linearGradient>
 			</defs>
-				<g fill="var(--background-accent)" className="no-events">
+				<g fill={Themes.theme.backgroundAccent} className="no-events">
 					{ePoints}
 				</g>
 				<g stroke="#fff">
@@ -109,15 +109,15 @@ function Editor() {
 					<svg className="block-pattle" style={{aspectRatio: raito}} viewBox={`${w/-2} ${w/-2} ${w} ${h}`} xmlns="http://www.w3.org/2000/svg" id="main-svg" fill="#7a7a7a">
 						<defs>
 							<linearGradient id="gradient" x1="0%" y1="0%" x2="0%" y2="100%">
-								<stop offset="0%" stopColor="var(--power0)" />
-								<stop offset="100%" stopColor="var(--power100)" />
+								<stop offset="0%" stopColor={Themes.theme.power0}/>
+								<stop offset="100%" stopColor={Themes.theme.power100} />
 							</linearGradient>
 							<linearGradient id="path-gradient" spreadMethod="pad" gradientUnits="userSpaceOnUse" x1="0" y1="0" x2="0" y2="-10">
-								<stop offset="0%" stopColor="var(--power0)" />
-								<stop offset="100%" stopColor="var(--power100)" />
+								<stop offset="0%" stopColor={Themes.theme.power0}/>
+								<stop offset="100%" stopColor={Themes.theme.power100} />
 							</linearGradient>
 						</defs>
-						<g fill="var(--background-accent)" className="no-events">
+						<g fill={Themes.theme.backgroundAccent} className="no-events">
 							{/*{ePoints}*/}
 						</g>
 							{eBlocks}
@@ -277,6 +277,19 @@ function Editor() {
 				}
 				rows.sort((r1,r2) => r1.sort-r2.sort);
 				return <div className="truth-table-box">
+							<button onClick={e => {
+								frame["truth-table"] = {};
+								truthtable = frame["truth-table"];
+								let index = 0;
+								for (var s = 0; s < 1 << inputs.length; s++) {
+									for (var i = 0; i < inputs.length; i++) {
+										inputs[i].active = ((1 << i) & s) == 0;
+									}
+									Vars.updateBlocks();
+									addStateToTable();
+								}
+								Vars.renderScheme();
+							}}>Generate</button>
 							<table>
 								<thead>
 								<tr>
@@ -288,17 +301,6 @@ function Editor() {
 									{rows.map((e,id) => e.e)}
 								</tbody>
 							</table>
-							<button onClick={e => {
-								let index = 0;
-								for (var s = 0; s < 1 << inputs.length; s++) {
-									for (var i = 0; i < inputs.length; i++) {
-										inputs[i].active = ((1 << i) & s) == 0;
-									}
-									Vars.updateBlocks();
-									addStateToTable();
-								}
-								Vars.renderScheme();
-							}}>Generate</button>
 					   </div>;
 			}}/>
 		</div>

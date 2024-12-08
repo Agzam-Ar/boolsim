@@ -7,7 +7,7 @@ class BlockElement extends React.Component {
     
 
 	constructor(props) {
-		super(props);
+		super();
 		this.state = {};
 		if(props.id == undefined) {
 			this.block = props.block;
@@ -57,17 +57,17 @@ class BlockElement extends React.Component {
 		let selected = Vars.selected.target == this.block;
 
 		let block = this.block;
+		for (var i = 0; i < this.block.iPorts.length; i++) {
+			let port = this.block.iPorts[i];
+			eOutputs.push(this.createPort('i', i, port));
+			if(selected) eOutputsSelected.push(this.createPort('i', i, port, true));
+		}
 		for (var i = 0; i < this.block.oPorts.length; i++) {
 			let port = this.block.oPorts[i];
 			eOutputs.push(this.createPort('o', i, port));
 			if(selected) eOutputsSelected.push(this.createPort('o', i, port, true));
 		}
 
-		for (var i = 0; i < this.block.iPorts.length; i++) {
-			let port = this.block.iPorts[i];
-			eOutputs.push(this.createPort('i', i, port));
-			if(selected) eOutputsSelected.push(this.createPort('i', i, port, true));
-		}
 
 		let glow = this.block.active && Themes.theme.glow;
 		let border = Themes.theme.powerBorderSize * Themes.theme.powerSize;
@@ -78,8 +78,8 @@ class BlockElement extends React.Component {
 			border = .2  * Themes.theme.powerSize;
 		}
 		// return <rect width={box.w} height="100" />;
-        return (<g x={box.x} y={box.y} stroke={this.block.active ? "url(#gradient)" : "var(--unactive)"} transform={`translate(${box.x} ${box.y})`}> 
-			<rect onClick={e => {
+        return (<g x={box.x} y={box.y} stroke={this.block.active ? "url(#gradient)" : Themes.theme.unactive} transform={`translate(${box.x} ${box.y})`}> 
+			<rect fill="transparent" onClick={e => {
         			if(this.block.preset) return;
 					Vars.selected.target = this.block;
 
@@ -124,19 +124,19 @@ class BlockElement extends React.Component {
 				Vars.mouse.draggLastPos = pos;
 				Vars.mouse.draggBlockPos = {x:block.box.x, y:block.box.y};
 				Vars.mouse.draggBlock = block;
-			}} class="element-box" strokeWidth={border} fill="transparent" x={box.w/-2} y={box.h/-2} width={box.w} height={box.h}></rect>
+			}} className="element-box" strokeWidth={border} fill="transparent" x={box.w/-2} y={box.h/-2} width={box.w} height={box.h}></rect>
 			
 			{eOutputsSelected}
 			{selected ? <g className="no-events" strokeWidth={border+1} stroke={Themes.theme.selectColor} transform={`rotate(${this.block.angle*-90} 0 0)`}>
 				{this.getBody()}
 			</g> : []}
 			{eOutputs}
-			{border > 0 ? <g strokeWidth={border} stroke="var(--power-border-color)" fill="var(--power-border-color)" transform={`rotate(${this.block.angle*-90} 0 0)`}>{body}</g> : []}
-			<g fill="var(--func-color)"transform={`rotate(${this.block.angle*-90} 0 0)`}>{body}</g>
+			{border > 0 ? <g strokeWidth={border} stroke={Themes.theme.powerBorderColor} fill={Themes.theme.powerBorderColor} transform={`rotate(${this.block.angle*-90} 0 0)`}>{body}</g> : []}
+			<g fill={Themes.theme.funcColor} transform={`rotate(${this.block.angle*-90} 0 0)`}>{body}</g>
 			{glow ? <g transform={`rotate(${this.block.angle*-90} 0 0)`} className="bloor1">{this.getBody()}</g> : []}
 			{glow ? <g transform={`rotate(${this.block.angle*-90} 0 0)`} className="bloor2">{this.getBody()}</g> : []}
 			{<text className="label" stroke="none">{this.block.name}</text>}
-			{/*{<text y="8" className="label" stroke="none">#{this.block.id}</text>}*/}
+			{/*{<text className="label" y="10" stroke="none">{this.block.lastUpdate}({this.block.loopsStack+""})</text>}*/}
         </g>);
     }
 
@@ -144,8 +144,18 @@ class BlockElement extends React.Component {
 		let glow = config.active && Themes.theme.glow;
 		let border = Themes.theme.powerBorderSize * Themes.theme.powerSize;
 
-		let size = config.size == undefined ? Vars.nodesize : config.size;
-		
+		let size = config.size == undefined ? Themes.theme.nodeSize : config.size;
+		if(Themes.theme.standart) {
+			let count = 0;
+			let lst = this.block.listeners;
+			for (let o of Object.keys(lst)) {
+				if(lst[o] != undefined && o.startsWith("linkUpdateTo")) count++;
+			}
+
+			console.log(this.block.name, count, lst);
+			if(count <= 1) size = 0;
+		}
+
 		let x1 = config.drawSrcX;
 		let y1 = config.drawSrcY;
 		let x2 = config.dx;
@@ -170,23 +180,23 @@ class BlockElement extends React.Component {
 		return <g key={type + portId} >
         	<defs>
 				<linearGradient id={gradientName} spreadMethod="pad" gradientUnits="userSpaceOnUse" x1={x1} y1={y1} x2={x2} y2={y2}>
-					<stop offset="0%" stopColor="var(--power50)" stopOpacity="1"></stop>
-					<stop offset="100%" stopColor="var(--power100)" stopOpacity="1"></stop>
+					<stop offset="0%" stopColor={Themes.theme.power50} stopOpacity="1"></stop>
+					<stop offset="100%" stopColor={Themes.theme.power100} stopOpacity="1"></stop>
 				</linearGradient>
         	</defs>
-        	<g class="no-events" >
+        	<g className="no-events" >
 				{selected ? <path className="no-events" d={d} strokeWidth={border+1} stroke={Themes.theme.selectColor} strokeLinecap="round" strokeLinejoin="miter"></path> : undefined}
 				
-				{border > 0 ? <path className={Themes.theme.mixBlend} d={d} strokeWidth={border} stroke="var(--power-border-color)" strokeLinecap="round" strokeLinejoin="miter"></path> : undefined}
+				{border > 0 ? <path className={Themes.theme.mixBlend} d={d} strokeWidth={border} stroke={Themes.theme.powerBorderColor} strokeLinecap="round" strokeLinejoin="miter"></path> : undefined}
 	
-				<path className="light" d={d} stroke={config.active ? `url(#${gradientName})` : "var(--unactive)"} strokeLinecap="round" strokeLinejoin="miter"></path>
-				{glow ? <path className="bloor1" d={d} stroke={config.active ? `url(#${gradientName})` : "var(--unactive)"} strokeLinecap="butt" strokeLinejoin="miter" fillOpacity="0" strokeMiterlimit="4" strokeOpacity="1"></path> : <g></g>}
-				{glow ? <path className="bloor2" d={d} stroke={config.active ? `url(#${gradientName})` : "var(--unactive)"} strokeLinecap="butt" strokeLinejoin="miter" fillOpacity="0" strokeMiterlimit="4" strokeOpacity="1"></path> : <g></g>}
+				<path className="light" d={d} stroke={config.active ? `url(#${gradientName})` : Themes.theme.unactive} strokeLinecap="round" strokeLinejoin="miter"></path>
+				{glow ? <path className="bloor1" d={d} stroke={config.active ? `url(#${gradientName})` : Themes.theme.unactive} strokeLinecap="butt" strokeLinejoin="miter" fillOpacity="0" strokeMiterlimit="4" strokeOpacity="1"></path> : <g></g>}
+				{glow ? <path className="bloor2" d={d} stroke={config.active ? `url(#${gradientName})` : Themes.theme.unactive} strokeLinecap="butt" strokeLinejoin="miter" fillOpacity="0" strokeMiterlimit="4" strokeOpacity="1"></path> : <g></g>}
 				{selected ? <circle strokeWidth={border+1} stroke={Themes.theme.selectColor} fill={Themes.theme.selectColor} cx={config.dx} cy={config.dy} r={size}></circle> : undefined}
-				{border > 0 ? <circle strokeWidth={border} stroke="var(--power-border-color)" fill="var(--power-border-color)" cx={config.dx} cy={config.dy} r={size}></circle> : undefined}
-				<circle stroke={config.active ? "var(--power100)" : "var(--unactive)"} fill="var(--unactive)" cx={config.dx} cy={config.dy} r={size}></circle>
-				{glow ? <circle className="bloor1" stroke={config.active ? "var(--power100)" : "none"} fill="none" cx={config.dx} cy={config.dy} r={size}></circle> : undefined}
-				{glow ? <circle className="bloor2" stroke={config.active ? "var(--power100)" : "none"} fill="none" cx={config.dx} cy={config.dy} r={size}></circle> : undefined}
+				{border > 0 ? <circle strokeWidth={border} stroke={Themes.theme.powerBorderColor} fill={Themes.theme.powerBorderColor} cx={config.dx} cy={config.dy} r={size}></circle> : undefined}
+				<circle stroke={config.active ? Themes.theme.power100 : Themes.theme.unactive} fill={Themes.theme.unactive} cx={config.dx} cy={config.dy} r={size}></circle>
+				{glow ? <circle className="bloor1" stroke={config.active ? Themes.theme.power100 : "none"} fill="none" cx={config.dx} cy={config.dy} r={size}></circle> : undefined}
+				{glow ? <circle className="bloor2" stroke={config.active ? Themes.theme.power100 : "none"} fill="none" cx={config.dx} cy={config.dy} r={size}></circle> : undefined}
 			</g>
 			<circle stroke="transparent" fill="transparent" strokeWidth={border} cx={config.dx} cy={config.dy} r={size} onMouseEnter={e => {
 				if(this.block.preset) return;
@@ -195,14 +205,12 @@ class BlockElement extends React.Component {
 
 				if(type == 'o') {
 					if(wire.from == 'mouse') {
-						wire.from = this.block.id;
-						wire.fromPort = portId;
+						wire.setFrom(this.block.id, portId);
 					}
 				}
 				if(type == 'i') {
 					if(wire.to == 'mouse') {
-						wire.to = this.block.id;
-						wire.toPort = portId;
+						wire.setTo(this.block.id, portId);
 					}
 				}
 			}} onMouseLeave={e => {
@@ -212,14 +220,12 @@ class BlockElement extends React.Component {
 
 				if(type == 'o') {
 					if(wire.from == this.block.id) {
-						wire.from = 'mouse';
-						wire.fromPort = 0;
+						wire.setFrom('mouse', 0);
 					}
 				}
 				if(type == 'i') {
 					if(wire.to == this.block.id) {
-						wire.to = 'mouse';
-						wire.toPort = 0;
+						wire.setTo('mouse', 0);
 					}
 				}
 
@@ -229,16 +235,12 @@ class BlockElement extends React.Component {
 				wire.src = this.block.id;
 				
 				if(type == 'o') {
-					wire.from = this.block.id;
-					wire.fromPort = portId;
-					wire.to = 'mouse';
-					wire.toPort = 0;
+					wire.setFrom(this.block.id, portId);
+					wire.setTo('mouse', 0);
 				}
 				if(type == 'i') {
-					wire.to = this.block.id;
-					wire.toPort = portId;
-					wire.from = 'mouse';
-					wire.fromPort = 0;
+					wire.setTo(this.block.id, portId);
+					wire.setFrom('mouse', 0);
 				}
 
 				Vars.renderScheme();
@@ -276,8 +278,8 @@ class BlockElement extends React.Component {
 		let border = Themes.theme.powerBorderSize * Themes.theme.powerSize;
 
 		if(type == Vars.blockTypes.switch) return <g>
-			<rect class="no-events" x={left} y={top} width={box.w} height={box.h}></rect>
-			<circle stroke={this.block.active ? "inherit" : "var(--func-accent)"} className={this.block.preset ? "no-events" : "clickable"} r={Math.min(box.w, box.h)*.25} onClick={() => {
+			<rect className="no-events" x={left} y={top} width={box.w} height={box.h}></rect>
+			<circle stroke={this.block.active ? "inherit" : Themes.theme.funcAccent} className={this.block.preset ? "no-events" : "clickable"} r={Math.min(box.w, box.h)*.25} onClick={() => {
 				if(this.block.preset) return;
 				this.block.setActive(!this.block.active);
 				// this.block.update();
@@ -285,23 +287,23 @@ class BlockElement extends React.Component {
 		</g>;
 
 		if(type == Vars.blockTypes.lamp) return <g>
-			<circle class="no-events" fill={this.block.active ? "url(#gradient)" : "inherit"} r={Math.min(box.w, box.h)/2}></circle>
+			<circle className="no-events" fill={this.block.active ? "url(#gradient)" : "inherit"} r={Math.min(box.w, box.h)/2}></circle>
 			{/*<circle stroke={this.block.active ? "inherit" : "var(--func-accent)"} className={this.block.preset ? "no-events" : "clickable"} r={Math.min(box.w, box.h)*.25}></circle>*/}
 		</g>;
 
 
 		if(type == Vars.blockTypes.or) {
 			let k = 2/3;
-			return <path class="no-events" d={`M${left*k},0 Q${left*k},${top/2},${left},${top} Q${right/2},${top},${right},${0} Q${right/2},${bottom},${left},${bottom} Q${left*k} ${bottom/2} ${left*k} ${0}`}></path>;
+			return <path className="no-events" d={`M${left*k},0 Q${left*k},${top/2},${left},${top} Q${right/2},${top},${right},${0} Q${right/2},${bottom},${left},${bottom} Q${left*k} ${bottom/2} ${left*k} ${0}`}></path>;
 		}
-		if(type == Vars.blockTypes.and) return <path class="no-events" d={`M${left},${top} L${0},${top}, A ${.1} ${.1} 0 0 1 ${0} ${bottom} L${left} ${bottom} Z`}></path>;
+		if(type == Vars.blockTypes.and) return <path className="no-events" d={`M${left},${top} L${0},${top}, A ${.1} ${.1} 0 0 1 ${0} ${bottom} L${left} ${bottom} Z`}></path>;
 
 		if(type == Vars.blockTypes.not) return <g>
-			<path class="no-events"  d={`M${left},${top/2} L${right-2-border},${0} L${left} ${bottom/2} Z`}></path>
-			<circle class="no-events" cx={right} fill="#00000000" r={2}></circle>
+			<path className="no-events"  d={`M${left},${top/2} L${right-2-border},${0} L${left} ${bottom/2} Z`}></path>
+			<circle className="no-events" cx={right} fill="#00000000" r={2}></circle>
 		</g>;
 
-		if(type == Vars.blockTypes.xor) return <g class="no-events" stroke={this.block.active ? "url(#gradient)" : "var(--unactive)"}>
+		if(type == Vars.blockTypes.xor) return <g className="no-events" stroke={this.block.active ? "url(#gradient)" : Themes.theme.unactive}>
 			{/*<rect stroke="var(--unactive)" x={- box.w/2} y={- box.h/2} width={box.w} height={box.h}></rect>*/}
 			<path d={`M${left/2+1},0 Q${left/2+1},${top/2},${left+1},${top} Q${right},${top},${right},${0} Q${right},${bottom},${left+1},${bottom} Q${left/2+1} ${bottom/2} ${left/2+1} ${0}`}></path>
 			<path d={`M${left},${top} Q${left/2},${top/2},${left/2},${0}  Q${left/2},${bottom/2} ${left} ${bottom}`}></path>
