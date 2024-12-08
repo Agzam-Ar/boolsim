@@ -1,16 +1,16 @@
 {
   "files": {
     "main.css": "/boolsim/static/css/main.4463301a.css",
-    "main.js": "/boolsim/static/js/main.ae81104e.js",
+    "main.js": "/boolsim/static/js/main.615788e3.js",
     "static/js/453.19d88616.chunk.js": "/boolsim/static/js/453.19d88616.chunk.js",
     "static/media/logo.svg": "/boolsim/static/media/logo.6ce24c58023cc2f8fd88fe9d219db6c6.svg",
     "index.html": "/boolsim/index.html",
     "main.4463301a.css.map": "/boolsim/static/css/main.4463301a.css.map",
-    "main.ae81104e.js.map": "/boolsim/static/js/main.ae81104e.js.map",
+    "main.615788e3.js.map": "/boolsim/static/js/main.615788e3.js.map",
     "453.19d88616.chunk.js.map": "/boolsim/static/js/453.19d88616.chunk.js.map"
   },
   "entrypoints": [
     "static/css/main.4463301a.css",
-    "static/js/main.ae81104e.js"
+    "static/js/main.615788e3.js"
   ]
 }
