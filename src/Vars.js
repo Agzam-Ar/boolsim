@@ -285,7 +285,6 @@ class Block {
 				$props.x = pos.x/Vars.tilesize;
 				$props.y = pos.y/Vars.tilesize;
 				$props.name = "";
-				console.log($props);
 				return new Block($props);
 			}
 		} else {
@@ -404,8 +403,9 @@ class Block {
 			if(this.loopsStack > this.iPorts.length+10) {
 				return;
 			}
+		} else {
+			this.loopsStack = 0;
 		}
-		this.loopsStack = 0;
 		this.lastUpdate = updateId;
 
 		let state = [];
@@ -421,6 +421,11 @@ class Block {
 				break;
 			}
 		}
+		// if(this.name == 'X2') {
+		// 	for (let l of Object.keys(this.listeners)) {
+		// 		if(l != undefined) l(updateId);
+		// 	}
+		// }
 		
 		for (let l of Object.values(this.listeners)) {
 			if(l != undefined) l(updateId);
@@ -529,6 +534,7 @@ class Wire {
 	constructor(props) {
 		this.blocks = Vars.getBlocks();
 		this.loopsStack = 0;
+		this.repaint = () => {};
 		for(let k of Object.keys(props)) {
 			if(k == 'x' || k == 'y') {
 				this.box[k] = props[k]*Vars.tilesize;
@@ -547,13 +553,12 @@ class Wire {
 	update(updateId) {
 		if(updateId == this.lastUpdate) {
 			this.loopsStack++;
-			//return;
 		}
 		this.loopsStack = 0;
 		this.lastUpdate = updateId;
 
 		if(this.preset) return;
-		
+
 		let from  = Vars.getBlocks()[this.from];
 		let to    = Vars.getBlocks()[this.to];
 		if(to == undefined || from == undefined) {
@@ -572,6 +577,11 @@ class Wire {
 		}
 		to.iPorts[this.toPort].active = from.oPorts[this.fromPort].active;
 		to.update(updateId);
+		
+		if(this.lastUpdateActive != from.oPorts[this.fromPort].active) {
+			this.repaint();
+			this.lastUpdateActive = from.oPorts[this.fromPort].active;
+		}
 	}
 	
 
@@ -651,6 +661,8 @@ window.addEventListener('keydown', e => {
 		}
 		if(e.code == 'KeyO') {
 			try {
+				Vars.camera.x = 0;
+				Vars.camera.y = 0;
 				applyDecodedState(window.location.hash.substring(1));
 				// let decoded = decodeState(window.location.hash.substring(1));
 				// console.log("Decoded state", decoded);
@@ -789,7 +801,6 @@ window.addEventListener('mousemove', e => {
 	 onMouseMove(e);
 });
 window.addEventListener('touchmove', e => {
-	console.log('move');
 	e.mobile = true;
 	e.clientX = e.touches[0].clientX;
 	e.clientY = e.touches[0].clientY;
@@ -848,7 +859,6 @@ const onMouseUp = e => {
 };
 window.addEventListener('mouseup', e => onMouseUp(e));
 window.addEventListener('touchend', e => {
-	console.log("onMouseUp");
 	e.mobile = true;
 	e.clientX = e.changedTouches[0].clientX;
 	e.clientY = e.changedTouches[0].clientY;
@@ -900,6 +910,7 @@ new Block({preset: true, type: BlockTypes.all.and, 	 	 name: "And", angle: 0});
 new Block({preset: true, type: BlockTypes.all.or, 	 	 name: "Or", angle: 0});
 new Block({preset: true, type: BlockTypes.all.lamp, 	 name: "Lamp", angle: 0});
 new Block({preset: true, type: BlockTypes.all.nand, 	 name: "NAnd", angle: 0});
+new Block({preset: true, type: BlockTypes.all.nor, 	 name: "NOr", angle: 0});
 
 // new Block({preset: true, hidden: true, type: Vars.blockTypes.node, 	 name: "Node", angle: 0});
 wirePreset = new Wire({preset: true});

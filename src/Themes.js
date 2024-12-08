@@ -66,7 +66,8 @@ const Themes = {
     	power0: "#1B88E7",
     	power50: "#1B88E7",
     	power100: "#1B88E7",
-    	labelColor: "#000",
+    	labelColor: "#fff",
+    	labelBorderColor: "#777",
     	funcColor: "#fff",
     	funcAccent: "#D2D2D2",
 

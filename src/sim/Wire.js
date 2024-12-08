@@ -32,7 +32,8 @@ class WireElement extends React.Component {
 		let to = bs[link.to];
 
 	    const listener = () => {this.repaint()};
-		if(from != undefined) from.listeners["linkTo" + link.to] = listener;
+	    link.repaint = listener;
+		// if(from != undefined) from.listeners["linkTo" + link.to] = listener;
 
 		// if(this.link.preset) {
 		// 	console.log('Wire: ', link.from, link.fromPort);
@@ -110,7 +111,7 @@ class WireElement extends React.Component {
 					<stop offset="100%" stopColor={Themes.theme.power100} stopOpacity="1"></stop>
 				</linearGradient>
         	</defs>
-			{/*{<text className="label" x={cx} y={cy} stroke="none">{link.loopsStack+""}</text>}*/}
+			{/*{<text className="label" x={cx} y={cy} stroke="none">{link.lastUpdate+""}</text>}*/}
         	<g fill="none" className={Themes.theme.mixBlend} stroke={pfromActive ? `url(#${gradientName})` : Themes.theme.unactive}  onClick={e => {
         			if(link.preset) return;
 

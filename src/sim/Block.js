@@ -89,7 +89,6 @@ class BlockElement extends React.Component {
 							this.block.remove();
 						}
 					};
-					console.log("Down");
 					Vars.renderScheme();
         		}}
 			onTouchStart={e => {
@@ -116,7 +115,6 @@ class BlockElement extends React.Component {
 				let pos = Vars.toSvgPoint(e);
 
 				if(this.block.preset) {
-        			console.log("down preset");
         			block = this.block.createBlock();
         			pos = Vars.getSvgMousePos();
 				}
@@ -136,7 +134,8 @@ class BlockElement extends React.Component {
 			<g fill={Themes.theme.funcColor} transform={`rotate(${this.block.angle*-90} 0 0)`}>{body}</g>
 			{glow ? <g transform={`rotate(${this.block.angle*-90} 0 0)`} className="bloor1">{this.getBody()}</g> : []}
 			{glow ? <g transform={`rotate(${this.block.angle*-90} 0 0)`} className="bloor2">{this.getBody()}</g> : []}
-			{<text className="label" stroke="none">{this.block.name}</text>}
+			{Themes.theme.standart ? undefined : <text className="label" stroke={Themes.theme.labelBorderColor} strokeWidth=".5">{this.block.name}</text>}
+			{<text className="label" stroke="none" fill={Themes.theme.labelColor}>{this.block.name}</text>}
 			{/*{<text className="label" y="10" stroke="none">{this.block.lastUpdate}({this.block.loopsStack+""})</text>}*/}
         </g>);
     }
@@ -152,8 +151,6 @@ class BlockElement extends React.Component {
 			for (let o of Object.keys(lst)) {
 				if(lst[o] != undefined && o.startsWith("linkUpdateTo")) count++;
 			}
-
-			console.log(this.block.name, count, lst);
 			if(count <= 1) size = 0;
 		}
 
@@ -296,6 +293,16 @@ class BlockElement extends React.Component {
 		if(type == BlockTypes.all.or) {
 			let k = 2/3;
 			return <path className="no-events" d={`M${left*k},0 Q${left*k},${top/2},${left},${top} Q${right/2},${top},${right},${0} Q${right/2},${bottom},${left},${bottom} Q${left*k} ${bottom/2} ${left*k} ${0}`}></path>;
+		}
+		if(type == BlockTypes.all.nor) {
+			let k = 2/3;
+			let leftk = left*k-2;
+			left -= 2;
+			right -= 2;
+			return <g>
+				<path className="no-events" d={`M${leftk},0 Q${leftk},${top/2},${left},${top} Q${right/2},${top},${right},${0} Q${right/2},${bottom},${left},${bottom} Q${leftk} ${bottom/2} ${leftk} ${0}`}></path>
+				<circle className="no-events" cx={right + 2.5} fill="#00000000" r={2}></circle>
+			</g>;
 		}
 		if(type == BlockTypes.all.and) return <path className="no-events" d={`M${left},${top} L${0},${top}, A ${.1} ${.1} 0 0 1 ${0} ${bottom} L${left} ${bottom} Z`}></path>;
 		if(type == BlockTypes.all.nand) return <g>

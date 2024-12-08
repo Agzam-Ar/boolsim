@@ -281,7 +281,12 @@ function Editor() {
 						rows.push({sort: sortKeys, e: <tr key={rawRowKey}>{cols}</tr>});
 					}
 				}
+				if(inputs.length == 0 && outputs.length == 0) {
+					frame.visible = false;
+					return undefined;
+				}
 				rows.sort((r1,r2) => r1.sort-r2.sort);
+				frame.visible = true;
 				return <div className="truth-table-box">
 							<button onClick={e => {
 								frame["truth-table"] = {};

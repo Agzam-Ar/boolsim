@@ -29,7 +29,10 @@ function FloatFrame(props) {
 
 	let x = box.x;
 	if(box.x + box.w > window.innerWidth) x  = window.innerWidth - box.w;
+	
+	let $content = content();
 
+	if(frame.visible == false) return undefined;
 	return <div className="floatframe" style={{left: `${x}px`, top: `${box.y}px`, width: `${box.w}px`, height: `${box.h}px`}}>
 				<div className="frame-resize-hbox t">
 					<div className="frame-resize corner tl" onMouseDown={e => resize(e, 'tl')} onTouchStart={e => Events.toMouse(e, e=>resize(e, 'tl'))}></div>
@@ -60,7 +63,7 @@ function FloatFrame(props) {
 							Vars.mouse.draggBlockPos = {x:x, y:frame.box.y};
 							Vars.mouse.draggBlock = frame;
 						}}>{props.title}</div>
-						<div className="content-box" style={{left: `${x}px`, top: `${box.y}px`, width: `${box.w}px`, height: `calc(${box.h}px - var(--frame-head-size))`}}>{content()}</div>
+						<div className="content-box" style={{left: `${x}px`, top: `${box.y}px`, width: `${box.w}px`, height: `calc(${box.h}px - var(--frame-head-size))`}}>{$content}</div>
 					</div>
 					<div className="frame-resize-vbox r">
 						<div className="frame-resize vline r" onMouseDown={e => resize(e, 'r')}></div>
