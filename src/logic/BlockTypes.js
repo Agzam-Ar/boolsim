@@ -203,6 +203,35 @@ const blocktypes = [
 			},
 	    },
 	},
+	{
+		name: "xor",
+	    outputs: {min:1,max:1},
+	    inputs: {value:2,min:1},
+	    func: (a,is,os) => {
+	    	a = 0;
+			for (let i of is) {
+				if(i.active) a++;
+			}
+			a = a%2;
+			for (let o of os) {
+				o.active = a;
+			}
+			return a;
+	    },
+	    box: {
+	    	in: {
+				u1: (box) => -Math.min(box.w, box.h)*.3+.5,
+				u2: (box) => -10,
+				v2: (box, i) => -i*10,
+	    	},
+			out: {
+				u1: (box) => Math.min(box.w, box.h)*.75,
+				v1: (box) => 0,
+				u2: (box) => 10,
+				v2: (box) => 0,
+			},
+	    },
+	},
 ];
 
 const BlockTypes = {

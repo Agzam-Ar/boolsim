@@ -63,7 +63,7 @@ function FloatFrame(props) {
 							Vars.mouse.draggBlockPos = {x:x, y:frame.box.y};
 							Vars.mouse.draggBlock = frame;
 						}}>{props.title}</div>
-						<div className="content-box" style={{left: `${x}px`, top: `${box.y}px`, width: `${box.w}px`, height: `calc(${box.h}px - var(--frame-head-size))`}}>{$content}</div>
+						<div className="content-box" style={{left: `${x}px`, top: `${box.y}px`, width: `${box.w}px`, height: `calc(${box.h}px - var(--frame-head-size))`, overflow: `${box.overflow}`}}>{$content}</div>
 					</div>
 					<div className="frame-resize-vbox r">
 						<div className="frame-resize vline r" onMouseDown={e => resize(e, 'r')}></div>

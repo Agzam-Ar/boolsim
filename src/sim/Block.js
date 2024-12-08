@@ -315,27 +315,16 @@ class BlockElement extends React.Component {
 			<circle className="no-events" cx={right} fill="#00000000" r={2}></circle>
 		</g>;
 
-		if(type == BlockTypes.all.xor) return <g className="no-events" stroke={this.block.active ? "url(#gradient)" : Themes.theme.unactive}>
-			{/*<rect stroke="var(--unactive)" x={- box.w/2} y={- box.h/2} width={box.w} height={box.h}></rect>*/}
-			<path d={`M${left/2+1},0 Q${left/2+1},${top/2},${left+1},${top} Q${right},${top},${right},${0} Q${right},${bottom},${left+1},${bottom} Q${left/2+1} ${bottom/2} ${left/2+1} ${0}`}></path>
-			<path d={`M${left},${top} Q${left/2},${top/2},${left/2},${0}  Q${left/2},${bottom/2} ${left} ${bottom}`}></path>
-			{/*<rect stroke="var(--unactive)" x={box.w/-2*.9} y={box.h/-2*.9} width={box.w*.9} height={box.h*.9}></rect>
-			<g className="bloor1">
-			<rect stroke="var(--unactive)" x={box.w/-2*.9} y={box.h/-2*.9} width={box.w*.9} height={box.h*.9}></rect>
-				<circle  fill="#00000000"r={Math.min(box.w, box.h)*.4}></circle>
-				<circle stroke={this.block.active ? "url(#gradient)" : "transparent"} fill="#00000000"r={Math.min(box.w, box.h)*.3}></circle>
-			</g>
-			<g className="bloor2" stroke={this.block.active ? "url(#gradient)" : "transparent"}>
-			<rect stroke="var(--unactive)" x={box.w/-2*.9} y={box.h/-2*.9} width={box.w*.9} height={box.h*.9}></rect>
-				<circle fill="#00000000" r={Math.min(box.w, box.h)*.4}></circle>
-				<circle stroke={this.block.active ? "url(#gradient)" : "transparent"} fill="#00000000" r={Math.min(box.w, box.h)*.3}></circle>
-			</g>
-			<circle className="clickable" stroke={this.block.active ? "url(#gradient)" : "var(--unactive)"} fill="var(--unactive)" r={Math.min(box.w, box.h)*.3} onClick={() => {
-				this.block.active = !this.block.active;
-				this.block.update();
-				// this.repaint();
-			}}></circle>*/}
-		</g>;
+		if(type == BlockTypes.all.xor) {
+			let cool = .5;
+			let rleft = left/2;
+			let rshift = 1;
+			right += 1;
+			return <g className="no-events">
+				<path d={`M${rleft+1+rshift},0 Q${rleft+1+rshift},${top/2},${left+1+rshift+cool},${top} Q${right+rshift-2},${top},${right+rshift},${0} Q${right+rshift-2},${bottom},${left+1+cool+rshift},${bottom} Q${left/2+1+rshift} ${bottom/2} ${left/2+1+rshift} ${0}`}></path>
+				<path fill="none" d={`M${left},${top} Q${left/2},${top/2},${left/2},${0}  Q${left/2},${bottom/2} ${left} ${bottom}`}></path>
+			</g>;
+		}
 	}
 
 	getHtmlBox() {

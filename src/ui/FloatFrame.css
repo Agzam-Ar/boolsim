@@ -96,7 +96,7 @@
 
 .content-box {
 	cursor: auto;
-	overflow: hidden;
+/*	overflow: hidden;*/
 /*	margin-top: var(--frame-head-size);*/
 	background: var(--frame-background);
 /*	box-shadow: 0 0 0 .1em #ff0 inset;*/

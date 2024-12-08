@@ -56,6 +56,7 @@ const encodeState = (state, props={version:1}) => {
 
 const decodeState = (code, props={index:0}) => {
 	let version = Strings.decodeNumber(code, props);
+	if(version < 0) return undefined;
 	console.log("decoding ver", version);
 	let decoded = {
 		blocks: {},
@@ -156,6 +157,7 @@ let Vars = {
 	// 	node:		4,
 	// 	lamp:		5,
 	// },
+	schemeSvg: () => document.getElementById('main-svg'),
 	propsCount: propsCount,
 	tilesize: 10,
 	camera: {x:getLocalStorageItem('camera.x', 0), y:getLocalStorageItem('camera.y', 0), width: window.innerWidth, height: window.innerHeight, scale: getLocalStorageItem('camera.scale', 1/10)},
@@ -225,9 +227,9 @@ let Vars = {
 class Frame {
 	
 	constructor(props) {
-		this.box 		= {x:0,y:0,w:Vars.tilesize,h:Vars.tilesize, minw:0, minh:0};
+		this.box 		= {x:0,y:0,w:Vars.tilesize,h:Vars.tilesize, minw:0, minh:0, overflow: "hidden"};
 		for(let k of Object.keys(props)) {
-			if(k == 'x' || k == 'y' || k == 'w' || k == 'h' || k == 'minw' || k == 'minh') this.box[k] = props[k];
+			if(k == 'x' || k == 'y' || k == 'w' || k == 'h' || k == 'minw' || k == 'minh' || k == 'overflow') this.box[k] = props[k];
 			else this[k] = props[k];
 		}
 		this.render = () => {};
@@ -264,6 +266,7 @@ frames["truth-table"] = new Frame({
 	y:getLocalStorageItem('frame.truth-table.y', window.innerHeight*2/20), 
 	w:getLocalStorageItem('frame.truth-table.w', window.innerHeight*3/10),
 	h:getLocalStorageItem('frame.truth-table.h', window.innerHeight*4/20), 
+	overflow: "auto",
 	minw:window.innerHeight*3/40, 	minh:window.innerHeight*3/40});
 
 
@@ -884,7 +887,7 @@ window.addEventListener("wheel", e => {
 			x: (p.x - window.innerWidth/2)*Vars.camera.scale,
 			y: (p.y - window.innerHeight/2)*Vars.camera.scale,
 		}};
-		let src = transform(Vars.mouse.client);//.x*Vars.camera.scale, y: Vars.mouse.client.y*Vars.camera.scale};
+		let src = transform(Vars.mouse.client == undefined ? {x:0,y:0} : Vars.mouse.client);//.x*Vars.camera.scale, y: Vars.mouse.client.y*Vars.camera.scale};
 		if(e.deltaY > 0) {
 			Vars.camera.scale += scrollPower;
 		} else {
@@ -892,7 +895,7 @@ window.addEventListener("wheel", e => {
 				Vars.camera.scale -= scrollPower;
 			}
 		}
-		let result = transform(Vars.mouse.client);//{x: Vars.mouse.client.x*Vars.camera.scale, y: Vars.mouse.client.y*Vars.camera.scale};
+		let result = transform(Vars.mouse.client == undefined ? {x:0,y:0} : Vars.mouse.client);//{x: Vars.mouse.client.x*Vars.camera.scale, y: Vars.mouse.client.y*Vars.camera.scale};
 	
 		Vars.camera.x += (src.x - result.x);///Vars.camera.scale;
 		Vars.camera.y += (src.y - result.y);///Vars.camera.scale;
@@ -910,7 +913,8 @@ new Block({preset: true, type: BlockTypes.all.and, 	 	 name: "And", angle: 0});
 new Block({preset: true, type: BlockTypes.all.or, 	 	 name: "Or", angle: 0});
 new Block({preset: true, type: BlockTypes.all.lamp, 	 name: "Lamp", angle: 0});
 new Block({preset: true, type: BlockTypes.all.nand, 	 name: "NAnd", angle: 0});
-new Block({preset: true, type: BlockTypes.all.nor, 	 name: "NOr", angle: 0});
+new Block({preset: true, type: BlockTypes.all.nor, 	 	 name: "NOr", angle: 0});
+new Block({preset: true, type: BlockTypes.all.xor, 	 	 name: "XOr", angle: 0});
 
 // new Block({preset: true, hidden: true, type: Vars.blockTypes.node, 	 name: "Node", angle: 0});
 wirePreset = new Wire({preset: true});
@@ -919,7 +923,7 @@ wirePreset = new Wire({preset: true});
 
 let needExample = true;
 
-if(window.location.hash.length > 1) {
+if(window.location.hash.length > 1 && !window.location.hash.startsWith("#@")) {
 	needExample = false;
 	try {
 
@@ -936,35 +940,145 @@ if(window.location.hash.length > 1) {
 	}
 }
 
+console.log("needExample", needExample);
 
 if(needExample) {
-	let $a  = new Block({type: BlockTypes.all.switch, x:-5, y:-2,  	name: "X1",  angle: 0});
-	let $b  = new Block({type: BlockTypes.all.switch, x:-5, y:0,		name: "X2",  angle: 0});
-	let $c  = new Block({type: BlockTypes.all.switch, x:-5, y:2,		name: "X3",  angle: 0});
-	
-	let $notb = new Block({type: BlockTypes.all.not,  x:-2, y:0, name: "not", angle: 0});
-	new Wire({from:$b.id, to:$notb.id, fromPort:0, toPort:0});
-	
-	let $and1 = new Block({type: BlockTypes.all.and,    x:1, y:1, name: "and", angle: 0});
-	new Wire({from:$notb.id, to:$and1.id, fromPort:0, toPort:1});
-	new Wire({from:$c.id,    to:$and1.id, fromPort:0, toPort:0});
-	
-	let $and2 = new Block({type: BlockTypes.all.and,    x:4, y:-1, name: "and", angle: 0});
-	new Wire({from:$a.id, 	 to:$and2.id, fromPort:0, toPort:1});
-	new Wire({from:$notb.id, to:$and2.id, fromPort:0, toPort:0});
-	
-	
-	let $and3 = new Block({type: BlockTypes.all.and,    x:2, y:4, name: "and", angle: 0});
-	new Wire({from:$a.id, to:$and3.id, fromPort:0, toPort:1});
-	new Wire({from:$c.id, to:$and3.id, fromPort:0, toPort:0});
-	
-	let $or  = new Block({type: BlockTypes.all.or, 	  x:8, y:1, name: "or",  angle: 0, inputs: 3});
-	new Wire({from:$and1.id, to:$or.id, fromPort:0, toPort:1});
-	new Wire({from:$and2.id, to:$or.id, fromPort:0, toPort:2});
-	new Wire({from:$and3.id, to:$or.id, fromPort:0, toPort:0});
 
-	let $lamp  = new Block({type: BlockTypes.all.lamp, 	  x:12, y:1, name: "F",  angle: 0});
-	new Wire({from:$or.id, to:$lamp.id, fromPort:0, toPort:0});
+	const createSum = (n) => {
+		
+		let as = [];
+		let bs = [];
+		let cs = [];
+
+		let sums = [];
+		for (var i = 0; i < n; i++) {
+			let first = i == 0;
+			let x = first ? 6 : i*4;
+			let y = i*6;
+			as.push(new Block({type: BlockTypes.all.switch,  x:-5, y:y+1, name: 'A' + (i+1)}));
+		}
+		
+		for (var i = 0; i < n; i++) {
+			let first = i == 0;
+
+			let x = first ? 6 : i*4;
+			let y = i*6;
+
+			bs.push(new Block({type: BlockTypes.all.switch,  x:-3, y:y+3, name: 'B' + (i+1)}));
+			cs.push(new Block({type: BlockTypes.all.lamp,  x:n*4+8, y:y+1, name: 'C' + (i+1)}));
+			
+			let sum = {};
+			let lNor = new Block({type: first ? BlockTypes.all.xor : BlockTypes.all.xor,  x:x+3, y:y+2, name: 'NOR-L'});
+			let rNor = first ? null : new Block({type: BlockTypes.all.xor,  x:x+8, y:y+1, name: 'NOR-R'});
+			let lAnd  = new Block({type: BlockTypes.all.and,  x:x+3, y:y+3+2, name: 'AND-L'});
+			let rAnd  = first ? null : new Block({type: BlockTypes.all.and,  x:x+7, y:y+4, name: 'AND-R'});
+			let or = first ? null : new Block({type: BlockTypes.all.or,  x:x+9, y:y+5, name: 'OR'});
+
+			let aNode = new Block({type: BlockTypes.all.node,  x:x+1, y:y+1, name: 'A'});
+			let bNode = new Block({type: BlockTypes.all.node,  x:x, y:y+3, name: 'B'});
+			let cNode = first ? null : new Block({type: BlockTypes.all.node,  x:x+6, y:y, name: 'C'});
+			let tNode = first ? null : new Block({type: BlockTypes.all.node,  x:x+5, y:y+2, name: 'T'});
+
+			
+			sum.lNor = lNor; 
+			sum.rNor = rNor; 
+			sum.lAnd  = lAnd ; 
+			sum.rAnd  = rAnd ; 
+
+			new Wire({from:aNode.id, to:lNor.id, fromPort:0, toPort:1});
+			new Wire({from:bNode.id, to:lNor.id, fromPort:0, toPort:0});
+			new Wire({from:aNode.id, to:lAnd.id, fromPort:0, toPort:1});
+			new Wire({from:bNode.id, to:lAnd.id, fromPort:0, toPort:0});
+	
+			
+			if(!first) {
+				new Wire({from:lNor.id, to:tNode.id, fromPort:0, toPort:0});
+				new Wire({from:tNode.id, to:rNor.id, fromPort:0, toPort:0});
+				new Wire({from:lAnd.id, to:or.id, fromPort:0, toPort:0});
+				new Wire({from:rAnd.id, to:or.id, fromPort:0, toPort:1});
+
+				new Wire({from:tNode.id, to:rAnd.id, fromPort:0, toPort:0});
+				new Wire({from:cNode.id, to:rAnd.id, fromPort:0, toPort:1});
+				new Wire({from:cNode.id, to:rNor.id, fromPort:0, toPort:1});
+			}
+
+			
+			sum.a = (from) => {
+				new Wire({from:from.id, to:aNode.id, fromPort:0, toPort:0});
+				// new Wire({from:from.id, to:lAnd.id, fromPort:0, toPort:1});
+			};
+			sum.b = (from) => {
+				new Wire({from:from.id, to:bNode.id, fromPort:0, toPort:0});
+			};
+			if(!first) sum.c = (from) => {
+				new Wire({from:from.id, to:cNode.id, fromPort:0, toPort:0});
+			};
+			sum.s = first ? lNor : rNor;
+			sum.p = first ? lAnd : or;
+			sums.push(sum);
+		}
+
+
+		for (var i = 0; i < n-1; i++) {
+			let first = i == 0;
+			let f = sums[i];
+			let t = sums[i+1];
+
+			t.c(f.p);
+		}
+
+		for (var i = 0; i < n; i++) {
+			sums[i].a(as[i]);
+			sums[i].b(bs[i]);
+			new Wire({from:sums[i].s.id, to:cs[i].id, fromPort:0, toPort:0});
+		}
+
+
+		let p = new Block({type: BlockTypes.all.lamp,  x:n*4+8, y:n*6, name: 'p'});
+			new Wire({from:sums[n-1].p.id, to:p.id, fromPort:0, toPort:0});
+
+	}
+
+
+	if(window.location.hash.startsWith("#@adder")) {
+		let n = parseInt(window.location.hash.substring("#@adder".length));
+		if(!isNaN(n)) {
+			console.log('secret code');
+			needExample = false;
+			createSum(n);
+		}
+	}
+
+	if(needExample) {
+		let $a  = new Block({type: BlockTypes.all.switch, x:-5, y:-2,  	name: "X1",  angle: 0});
+		let $b  = new Block({type: BlockTypes.all.switch, x:-5, y:0,	name: "X2",  angle: 0});
+		let $c  = new Block({type: BlockTypes.all.switch, x:-5, y:2,	name: "X3",  angle: 0});
+		
+		let $notb = new Block({type: BlockTypes.all.not,  x:-2, y:0, name: "not", angle: 0});
+		new Wire({from:$b.id, to:$notb.id, fromPort:0, toPort:0});
+		
+		let $and1 = new Block({type: BlockTypes.all.and,    x:1, y:1, name: "and", angle: 0});
+		new Wire({from:$notb.id, to:$and1.id, fromPort:0, toPort:1});
+		new Wire({from:$c.id,    to:$and1.id, fromPort:0, toPort:0});
+		
+		let $and2 = new Block({type: BlockTypes.all.and,    x:4, y:-1, name: "and", angle: 0});
+		new Wire({from:$a.id, 	 to:$and2.id, fromPort:0, toPort:1});
+		new Wire({from:$notb.id, to:$and2.id, fromPort:0, toPort:0});
+		
+		
+		let $and3 = new Block({type: BlockTypes.all.and,    x:2, y:4, name: "and", angle: 0});
+		new Wire({from:$a.id, to:$and3.id, fromPort:0, toPort:1});
+		new Wire({from:$c.id, to:$and3.id, fromPort:0, toPort:0});
+		
+		let $or  = new Block({type: BlockTypes.all.or, 	  x:8, y:1, name: "or",  angle: 0, inputs: 3});
+		new Wire({from:$and1.id, to:$or.id, fromPort:0, toPort:1});
+		new Wire({from:$and2.id, to:$or.id, fromPort:0, toPort:2});
+		new Wire({from:$and3.id, to:$or.id, fromPort:0, toPort:0});
+	
+		let $lamp  = new Block({type: BlockTypes.all.lamp, 	  x:12, y:1, name: "F",  angle: 0});
+		new Wire({from:$or.id, to:$lamp.id, fromPort:0, toPort:0});
+	}
+
 }
 
 
