@@ -3,6 +3,7 @@ import './Editor.css';
 import BlockElement from './Block';
 import WireElement from './Wire';
 import Vars from '../Vars';
+import BlockTypes from '../logic/BlockTypes'
 import Themes from '../Themes'
 import FloatFrame from '../ui/FloatFrame';
 import Events from '../utils/Events';
@@ -130,7 +131,9 @@ function Editor() {
 				let eElements = [];
 				let target = Vars.selected.target;
 				let type = target.classType;
+				
 
+				let bType = BlockTypes[target.type];
 
 				if(type == 'Block') {
 					let keys = {
@@ -138,11 +141,11 @@ function Editor() {
 							name: "Name",
 							type: "string",
 						},
-						inputs: {
+						inputs: bType.inputs.min == bType.inputs.max ? undefined : {
 							name: "Number of inputs",
 							type: "int",
-							min: 0,
-							max: 10,
+							min: bType.inputs.min,
+							max: bType.inputs.max,
 						},
 						angle: {
 							name: "Angle",
@@ -155,8 +158,11 @@ function Editor() {
 							],
 						},
 					};
+
+
 					for (let key of Object.keys(keys)) {
 						let config = keys[key];
+						if(config == undefined) continue;
 						eElements.push(<label key={"label-" + key} htmlFor="" >{config.name}</label>);
 						if(config.type == 'string') {
 							eElements.push(<input key={'input-' + key} key={key + "-input"} type="text" value={target[key]} onChange={e => {
@@ -201,7 +207,7 @@ function Editor() {
 				for (let block of Object.values(Vars.getBlocks())) {
 					if(block == undefined) continue;
 					if(block.name == "") continue;
-					if(block.type == Vars.blockTypes.switch) {
+					if(block.type == BlockTypes.all.switch) {
 						inputs.push(block);
 						head.push({
 							name: block.name,
@@ -213,7 +219,7 @@ function Editor() {
 				for (let block of Object.values(Vars.getBlocks())) {
 					if(block == undefined) continue;
 					if(block.name == "") continue;
-					if(block.type == Vars.blockTypes.lamp) {
+					if(block.type == BlockTypes.all.lamp) {
 						outputs.push(block);
 						head.push({
 							name: block.name,

@@ -1,7 +1,8 @@
 
 import React from 'react'
-import Vars from '../Vars';
+import Vars from '../Vars'
 import Themes from '../Themes'
+import BlockTypes from '../logic/BlockTypes'
 
 class BlockElement extends React.Component {
     
@@ -277,7 +278,7 @@ class BlockElement extends React.Component {
 		let glow = this.block.active && Themes.theme.glow;
 		let border = Themes.theme.powerBorderSize * Themes.theme.powerSize;
 
-		if(type == Vars.blockTypes.switch) return <g>
+		if(type == BlockTypes.all.switch) return <g>
 			<rect className="no-events" x={left} y={top} width={box.w} height={box.h}></rect>
 			<circle stroke={this.block.active ? "inherit" : Themes.theme.funcAccent} className={this.block.preset ? "no-events" : "clickable"} r={Math.min(box.w, box.h)*.25} onClick={() => {
 				if(this.block.preset) return;
@@ -286,24 +287,24 @@ class BlockElement extends React.Component {
 			}}></circle>
 		</g>;
 
-		if(type == Vars.blockTypes.lamp) return <g>
+		if(type == BlockTypes.all.lamp) return <g>
 			<circle className="no-events" fill={this.block.active ? "url(#gradient)" : "inherit"} r={Math.min(box.w, box.h)/2}></circle>
 			{/*<circle stroke={this.block.active ? "inherit" : "var(--func-accent)"} className={this.block.preset ? "no-events" : "clickable"} r={Math.min(box.w, box.h)*.25}></circle>*/}
 		</g>;
 
 
-		if(type == Vars.blockTypes.or) {
+		if(type == BlockTypes.all.or) {
 			let k = 2/3;
 			return <path className="no-events" d={`M${left*k},0 Q${left*k},${top/2},${left},${top} Q${right/2},${top},${right},${0} Q${right/2},${bottom},${left},${bottom} Q${left*k} ${bottom/2} ${left*k} ${0}`}></path>;
 		}
-		if(type == Vars.blockTypes.and) return <path className="no-events" d={`M${left},${top} L${0},${top}, A ${.1} ${.1} 0 0 1 ${0} ${bottom} L${left} ${bottom} Z`}></path>;
+		if(type == BlockTypes.all.and) return <path className="no-events" d={`M${left},${top} L${0},${top}, A ${.1} ${.1} 0 0 1 ${0} ${bottom} L${left} ${bottom} Z`}></path>;
 
-		if(type == Vars.blockTypes.not) return <g>
+		if(type == BlockTypes.all.not) return <g>
 			<path className="no-events"  d={`M${left},${top/2} L${right-2-border},${0} L${left} ${bottom/2} Z`}></path>
 			<circle className="no-events" cx={right} fill="#00000000" r={2}></circle>
 		</g>;
 
-		if(type == Vars.blockTypes.xor) return <g className="no-events" stroke={this.block.active ? "url(#gradient)" : Themes.theme.unactive}>
+		if(type == BlockTypes.all.xor) return <g className="no-events" stroke={this.block.active ? "url(#gradient)" : Themes.theme.unactive}>
 			{/*<rect stroke="var(--unactive)" x={- box.w/2} y={- box.h/2} width={box.w} height={box.h}></rect>*/}
 			<path d={`M${left/2+1},0 Q${left/2+1},${top/2},${left+1},${top} Q${right},${top},${right},${0} Q${right},${bottom},${left+1},${bottom} Q${left/2+1} ${bottom/2} ${left/2+1} ${0}`}></path>
 			<path d={`M${left},${top} Q${left/2},${top/2},${left/2},${0}  Q${left/2},${bottom/2} ${left} ${bottom}`}></path>

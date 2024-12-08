@@ -1,5 +1,6 @@
 
 import Strings from './utils/Strings'
+import BlockTypes from './logic/BlockTypes'
 
 let nextId = 0;
 let blocksPattle = [];
@@ -147,14 +148,14 @@ const getLocalStorageItem = (key, def) => {
 
 
 let Vars = {
-	blockTypes: {
-		switch: 	0,
-		and: 		1,
-		or: 		2,
-		not: 		3,
-		node:		4,
-		lamp:		5,
-	},
+	// blockTypes: {
+	// 	switch: 	0,
+	// 	and: 		1,
+	// 	or: 		2,
+	// 	not: 		3,
+	// 	node:		4,
+	// 	lamp:		5,
+	// },
 	propsCount: propsCount,
 	tilesize: 10,
 	camera: {x:getLocalStorageItem('camera.x', 0), y:getLocalStorageItem('camera.y', 0), width: window.innerWidth, height: window.innerHeight, scale: getLocalStorageItem('camera.scale', 1/10)},
@@ -292,7 +293,7 @@ class Block {
 			if(props.preset != true) Vars.getBlocks()[this.id] = this;
 		}
 		this.box 		= {x:0,y:0,w:Vars.tilesize,h:Vars.tilesize};
-	    this.type 		= Vars.blockTypes.switch;
+	    this.type 		= BlockTypes.all.switch;
 	    this.active 	= false;
 	    this.outputs = 1;
 	    this.inputs  = 1;
@@ -301,20 +302,25 @@ class Block {
 	    	this.box.x = 0;
 	    	this.box.y = (blocksPattle.length-1)*20;
 	    }
+		
+		if(props.type != undefined) this.type = props.type;
 
-	    let type = props.type;
-		if(type == Vars.blockTypes.switch) {
-	    	this.outputs = 1;
-	    	this.inputs  = 0;
-		}
-		if(type == Vars.blockTypes.lamp) {
-	    	this.outputs = 0;
-	    	this.inputs  = 1;
-		}
-		if(type == Vars.blockTypes.or || type == Vars.blockTypes.and) {
-	    	this.outputs = 1;
-	    	this.inputs  = 2;
-		}
+	    let type = BlockTypes[this.type];
+	    console.log(type.name);
+
+	    if(type == undefined) {
+	    	console.warn("Type", type, "not defined");
+	    } else {
+	    	if(type.inputs == undefined) console.warn(`Type "${type.name}" not has defined inputs amount`);
+	    	else if(type.inputs.value != undefined) this.inputs = type.inputs.value;
+	    	else if(type.inputs.min   != undefined) this.inputs = type.inputs.min;
+	    	else if(type.inputs.max   != undefined) this.inputs = type.inputs.max;
+	    	if(type.outputs == undefined) console.warn(`Type "${type.name}" not has defined outputs amount`);
+	    	else if(type.outputs.value != undefined) this.outputs = type.outputs.value;
+	    	else if(type.outputs.min   != undefined) this.outputs = type.outputs.min;
+	    	else if(type.outputs.max   != undefined) this.outputs = type.outputs.max;
+	    	// console.log(`${type.name} has ${this.inputs}i ${this.outputs}o`);
+	    }
 		
 	    this.box.dragX 		= this.box.x;
 	    this.box.dragY 		= this.box.y;
@@ -325,14 +331,13 @@ class Block {
 		this.iPorts 	= [];
 		this.listeners  = {};
 
-
-
 		for(let k of Object.keys(props)) {
 			if(k == 'x' || k == 'y') {
 				this.box[k] = props[k]*Vars.tilesize;
 			}
 			else this[k] = props[k];
 		}
+	    // console.log(`${type.name} has ${this.inputs}i ${this.outputs}o`);
 
 		this.oPorts = [];
 		for (var i = 0; i < this.outputs; i++) {
@@ -453,53 +458,10 @@ class Block {
 			this.iPorts[i].drawSrcX = pos.srcX;
 			this.iPorts[i].drawSrcY = pos.srcY;
 		}
-
-
-		if(this.type == Vars.blockTypes.switch) {
-			for (var i = 0; i < this.oPorts.length; i++) {
-				this.oPorts[i].active = this.active;
-			}
-		}
-		if(this.type == Vars.blockTypes.lamp) {
-			this.active = false;
-			for (var i = 0; i < this.iPorts.length; i++) {
-				if(!this.iPorts[i].active) continue;
-				this.active = true;
-				break;
-			}
-		}
-		if(this.type == Vars.blockTypes.or) {
-			this.active = false;
-			for (var i = 0; i < this.iPorts.length; i++) {
-				if(!this.iPorts[i].active) continue;
-				this.active = true;
-				break;
-			}
-			for (var i = 0; i < this.oPorts.length; i++) {
-				this.oPorts[i].active = this.active;
-			}
-		}
-		if(this.type == Vars.blockTypes.and) {
-			this.active = true;
-			for (var i = 0; i < this.iPorts.length; i++) {
-				if(this.iPorts[i].active) continue;
-				this.active = false;
-				break;
-			}
-			for (var i = 0; i < this.oPorts.length; i++) {
-				this.oPorts[i].active = this.active;
-			}
-		}
-		if(this.type == Vars.blockTypes.not && this.iPorts.length > 0) {
-			this.active = !this.iPorts[0].active;
-			for (var i = 0; i < this.oPorts.length; i++) {
-				this.oPorts[i].active = this.active;
-			}
-		}
-		if(this.type == Vars.blockTypes.node && this.iPorts.length > 0) {
-			this.active = this.iPorts[0].active;
-			for (var i = 0; i < this.oPorts.length; i++) {
-				this.oPorts[i].active = this.active;
+		if(BlockTypes[this.type].func != undefined) {
+			let result = BlockTypes[this.type].func(this.active, this.iPorts, this.oPorts);
+			if(result != undefined) {
+				this.active = result;
 			}
 		}
 	}
@@ -508,73 +470,44 @@ class Block {
 		let type = this.type;
 		let box = this.box;
 		
-		let u = 0;
-		let v = 0;
-		let su = Math.min(box.w, box.h)*.3;
-		let sv = 0;
+		let u1 = Math.min(box.w, box.h)*.3;
+		let v1 = 0;
 
-		if(this.type == Vars.blockTypes.node) {
-			u = 0;
-			v = 0;
-			su = 0;
-			sv = 0;
+		let u2 = 0;
+		let v2 = 0;
+
+		if(BlockTypes[this.type].box != undefined && BlockTypes[this.type].box.out != undefined) {
+			if(BlockTypes[this.type].box.out != undefined) u1 = BlockTypes[this.type].box.out.u1(box);
+			if(BlockTypes[this.type].box.out != undefined) v1 = BlockTypes[this.type].box.out.v1(box);
+			if(BlockTypes[this.type].box.out != undefined) u2 = BlockTypes[this.type].box.out.u2(box);
+			if(BlockTypes[this.type].box.out != undefined) v2 = BlockTypes[this.type].box.out.v2(box);
+		} else {
+			// console.warn(`${BlockTypes[this.type].name} out box is not defined`);
 		}
-		if(this.type == Vars.blockTypes.switch) {
-			u = 10;
-			v = 0;
-			su = Math.min(box.w, box.h)*.3;
-			sv = 0;
-		}
-		if(this.type == Vars.blockTypes.not) {
-			u = 10;
-			v = 0;
-			su = Math.min(box.w, box.h)*.5+2;
-			sv = 0;
-		}
-		if(this.type == Vars.blockTypes.or || this.type == Vars.blockTypes.and) {
-			u = 10;
-			v = 0;
-			su = Math.min(box.w, box.h)*.5;
-			sv = 0;
-		}
-		
-		return {x: this.transformX(u,v), y: this.transformY(u,v), srcX:this.transformX(su,sv), srcY:this.transformY(su,sv)};
+		return {x: this.transformX(u2,v2), y: this.transformY(u2,v2), srcX:this.transformX(u1,v1), srcY:this.transformY(u1,v1)};
 	}
 
 	getInputPos(index) {
 		let type = this.type;
 		let box = this.box;
 		
-		let u = -10;
-		let v = 0;
-		let su = -Math.min(box.w, box.h)*.3;
-		let sv = 0;
-		
+		let u1 = -Math.min(box.w, box.h)*.3;
+		let v1 = 0;
+
+		let u2 = -10;
+		let v2 = 0;
 
 		let iDelta = this.inputs%2 == 1 ? Math.floor(index - this.inputs/2+1) : (index < this.inputs/2 ? Math.floor(index - this.inputs/2+1)-1 : Math.floor(index - this.inputs/2+1));
 
-		if(this.type == Vars.blockTypes.node) {
-			u = 0;
-			v = 0;
-			su = 0;
-			sv = 0;
+		if(BlockTypes[this.type].box != undefined && BlockTypes[this.type].box.in != undefined) {
+			if(BlockTypes[this.type].box.in.u1 != undefined) u1 = BlockTypes[this.type].box.in.u1(box, iDelta);
+			if(BlockTypes[this.type].box.in.v1 != undefined) v1 = BlockTypes[this.type].box.in.v1(box, iDelta);
+			if(BlockTypes[this.type].box.in.u2 != undefined) u2 = BlockTypes[this.type].box.in.u2(box, iDelta);
+			if(BlockTypes[this.type].box.in.v2 != undefined) v2 = BlockTypes[this.type].box.in.v2(box, iDelta);
+		} else {
+			// console.warn(`${BlockTypes[this.type].name} in box is not defined`);
 		}
-		if(this.type == Vars.blockTypes.not) {
-			u = -10;
-			v = 0;
-			su = -Math.min(box.w, box.h)*.5;
-			sv = 0;
-		}
-		if(this.type == Vars.blockTypes.or || this.type == Vars.blockTypes.and) {
-			u = -10;
-			v = -iDelta*10;
-			su = -Math.min(box.w, box.h)*.3+.5;
-		}
-		if(this.type == Vars.blockTypes.and) {
-			su = -Math.min(box.w, box.h)*.5;
-		}
-
-		return {x: this.transformX(u,v), y: this.transformY(u,v), srcX:this.transformX(su,sv), srcY:this.transformY(su,sv)};
+		return {x: this.transformX(u2,v2), y: this.transformY(u2,v2), srcX:this.transformX(u1,v1), srcY:this.transformY(u1,v1)};
 	}
 
 	transformX(u,v) {
@@ -964,11 +897,11 @@ document.getElementById('root').addEventListener('wheel', e => {
 	e.preventDefault();
 }, true);
 
-new Block({preset: true, type: Vars.blockTypes.switch, 	 name: "Switch", angle: 0});
-new Block({preset: true, type: Vars.blockTypes.not, 	 name: "Not", angle: 0});
-new Block({preset: true, type: Vars.blockTypes.and, 	 name: "And", angle: 0});
-new Block({preset: true, type: Vars.blockTypes.or, 	 	 name: "Or", angle: 0});
-new Block({preset: true, type: Vars.blockTypes.lamp, 	 name: "Lamp", angle: 0});
+new Block({preset: true, type: BlockTypes.all.switch, 	 name: "Switch", angle: 0});
+new Block({preset: true, type: BlockTypes.all.not, 	 name: "Not", angle: 0});
+new Block({preset: true, type: BlockTypes.all.and, 	 name: "And", angle: 0});
+new Block({preset: true, type: BlockTypes.all.or, 	 	 name: "Or", angle: 0});
+new Block({preset: true, type: BlockTypes.all.lamp, 	 name: "Lamp", angle: 0});
 
 // new Block({preset: true, hidden: true, type: Vars.blockTypes.node, 	 name: "Node", angle: 0});
 wirePreset = new Wire({preset: true});
@@ -996,32 +929,32 @@ if(window.location.hash.length > 1) {
 
 
 if(needExample) {
-	let $a  = new Block({type: Vars.blockTypes.switch, x:-5, y:-2,  	name: "X1",  angle: 0});
-	let $b  = new Block({type: Vars.blockTypes.switch, x:-5, y:0,		name: "X2",  angle: 0});
-	let $c  = new Block({type: Vars.blockTypes.switch, x:-5, y:2,		name: "X3",  angle: 0});
+	let $a  = new Block({type: BlockTypes.all.switch, x:-5, y:-2,  	name: "X1",  angle: 0});
+	let $b  = new Block({type: BlockTypes.all.switch, x:-5, y:0,		name: "X2",  angle: 0});
+	let $c  = new Block({type: BlockTypes.all.switch, x:-5, y:2,		name: "X3",  angle: 0});
 	
-	let $notb = new Block({type: Vars.blockTypes.not,  x:-2, y:0, name: "not", angle: 0});
+	let $notb = new Block({type: BlockTypes.all.not,  x:-2, y:0, name: "not", angle: 0});
 	new Wire({from:$b.id, to:$notb.id, fromPort:0, toPort:0});
 	
-	let $and1 = new Block({type: Vars.blockTypes.and,    x:1, y:1, name: "and", angle: 0});
+	let $and1 = new Block({type: BlockTypes.all.and,    x:1, y:1, name: "and", angle: 0});
 	new Wire({from:$notb.id, to:$and1.id, fromPort:0, toPort:1});
 	new Wire({from:$c.id,    to:$and1.id, fromPort:0, toPort:0});
 	
-	let $and2 = new Block({type: Vars.blockTypes.and,    x:4, y:-1, name: "and", angle: 0});
+	let $and2 = new Block({type: BlockTypes.all.and,    x:4, y:-1, name: "and", angle: 0});
 	new Wire({from:$a.id, 	 to:$and2.id, fromPort:0, toPort:1});
 	new Wire({from:$notb.id, to:$and2.id, fromPort:0, toPort:0});
 	
 	
-	let $and3 = new Block({type: Vars.blockTypes.and,    x:2, y:4, name: "and", angle: 0});
+	let $and3 = new Block({type: BlockTypes.all.and,    x:2, y:4, name: "and", angle: 0});
 	new Wire({from:$a.id, to:$and3.id, fromPort:0, toPort:1});
 	new Wire({from:$c.id, to:$and3.id, fromPort:0, toPort:0});
 	
-	let $or  = new Block({type: Vars.blockTypes.or, 	  x:8, y:1, name: "or",  angle: 0, inputs: 3});
+	let $or  = new Block({type: BlockTypes.all.or, 	  x:8, y:1, name: "or",  angle: 0, inputs: 3});
 	new Wire({from:$and1.id, to:$or.id, fromPort:0, toPort:1});
 	new Wire({from:$and2.id, to:$or.id, fromPort:0, toPort:2});
 	new Wire({from:$and3.id, to:$or.id, fromPort:0, toPort:0});
 
-	let $lamp  = new Block({type: Vars.blockTypes.lamp, 	  x:12, y:1, name: "F",  angle: 0});
+	let $lamp  = new Block({type: BlockTypes.all.lamp, 	  x:12, y:1, name: "F",  angle: 0});
 	new Wire({from:$or.id, to:$lamp.id, fromPort:0, toPort:0});
 }
 

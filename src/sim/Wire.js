@@ -1,6 +1,7 @@
 import React from 'react'
 import Vars from '../Vars';
 import Themes from '../Themes'
+import BlockTypes from '../logic/BlockTypes'
 
 class WireElement extends React.Component {
     
@@ -116,7 +117,7 @@ class WireElement extends React.Component {
         			if(Vars.selected.target == link) {
         				let pos = Vars.getSvgMousePos();
         				console.log("link:", link);
-        				let block = Vars.createBlock({type: Vars.blockTypes.node, x:Math.round(pos.x/Vars.tilesize), y:Math.round(pos.y/Vars.tilesize),  	name: "",  angle: 0});
+        				let block = Vars.createBlock({type: BlockTypes.all.node, x:Math.round(pos.x/Vars.tilesize), y:Math.round(pos.y/Vars.tilesize),  	name: "",  angle: 0});
         				console.log("block:", block);
         				let link1 = Vars.createLink({from: link.from, to:block.id, fromPort:link.fromPort, toPort:0});
         				let link2 = Vars.createLink({from: block.id, to:link.to, fromPort:0, toPort:link.toPort});
