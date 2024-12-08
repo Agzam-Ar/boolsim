@@ -95,10 +95,8 @@ const blocktypes = [
 	    outputs: {min:1,max:1},
 	    inputs: {min:1,max:1},
 	    func: (a,is,os) => {
-	    	console.log("not is: ", is.length);
 			if(is.length != 1) return false;
 			a = !is[0].active;
-	    	console.log("not is: ", a, is[0]);
 			for (let o of os) {
 				o.active = a;
 			}
@@ -138,12 +136,41 @@ const blocktypes = [
 	    outputs: {min:0,max:0},
 	    inputs: {min:1},
 	    func: (a,is,os) => {
-			a = false;
 			for (let i of is) {
 				if(!i.active) continue;
 				return true;
 			}
 			return false;
+	    },
+	},
+	{
+		name: "nand",
+	    outputs: {min:1,max:1},
+	    inputs: {value:2,min:1},
+	    func: (a,is,os) => {
+	    	a = false;
+			for (let i of is) {
+				if(i.active) continue;
+				a = true;
+				break;
+			}
+			for (let o of os) {
+				o.active = a;
+			}
+			return a;
+	    },
+	    box: {
+	    	in: {
+				u1: (box) => -Math.min(box.w, box.h)*.3+.5,
+				u2: (box) => -10,
+				v2: (box, i) => -i*10,
+	    	},
+			out: {
+				u1: (box) => Math.min(box.w, box.h)*.85,
+				v1: (box) => 0,
+				u2: (box) => 10,
+				v2: (box) => 0,
+			},
 	    },
 	},
 ];
@@ -154,6 +181,7 @@ const BlockTypes = {
 
 
 for (var i = 0; i < blocktypes.length; i++) {
+	if(blocktypes[i].inputs.min == undefined) blocktypes[i].inputs.min = 0;
 	BlockTypes[i] = blocktypes[i];
 	BlockTypes[blocktypes[i].name] = blocktypes[i];
 	BlockTypes.all[blocktypes[i].name] = i;

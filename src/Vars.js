@@ -306,7 +306,6 @@ class Block {
 		if(props.type != undefined) this.type = props.type;
 
 	    let type = BlockTypes[this.type];
-	    console.log(type.name);
 
 	    if(type == undefined) {
 	    	console.warn("Type", type, "not defined");
@@ -490,7 +489,7 @@ class Block {
 	getInputPos(index) {
 		let type = this.type;
 		let box = this.box;
-		
+
 		let u1 = -Math.min(box.w, box.h)*.3;
 		let v1 = 0;
 
@@ -720,10 +719,8 @@ const onMouseMove = e => {
 			return;
 		}
 		if(Vars.mouse.draggType == 'move-block') { //Vars.mouse.draggBlock != undefined) {
-			console.log("moveing");
 			let x = Vars.mouse.draggBlockPos.x + pos.x - Vars.mouse.draggStart.x;
 			let y = Vars.mouse.draggBlockPos.y + pos.y - Vars.mouse.draggStart.y;
-			console.log("moving", x, y);
 			Vars.mouse.draggBlock.box.x = x;
 			Vars.mouse.draggBlock.box.y = y;
 			Vars.mouse.draggBlock.updatePorts();
@@ -898,10 +895,11 @@ document.getElementById('root').addEventListener('wheel', e => {
 }, true);
 
 new Block({preset: true, type: BlockTypes.all.switch, 	 name: "Switch", angle: 0});
-new Block({preset: true, type: BlockTypes.all.not, 	 name: "Not", angle: 0});
-new Block({preset: true, type: BlockTypes.all.and, 	 name: "And", angle: 0});
+new Block({preset: true, type: BlockTypes.all.not, 	 	 name: "Not", angle: 0});
+new Block({preset: true, type: BlockTypes.all.and, 	 	 name: "And", angle: 0});
 new Block({preset: true, type: BlockTypes.all.or, 	 	 name: "Or", angle: 0});
 new Block({preset: true, type: BlockTypes.all.lamp, 	 name: "Lamp", angle: 0});
+new Block({preset: true, type: BlockTypes.all.nand, 	 name: "NAnd", angle: 0});
 
 // new Block({preset: true, hidden: true, type: Vars.blockTypes.node, 	 name: "Node", angle: 0});
 wirePreset = new Wire({preset: true});

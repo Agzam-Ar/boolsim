@@ -298,6 +298,10 @@ class BlockElement extends React.Component {
 			return <path className="no-events" d={`M${left*k},0 Q${left*k},${top/2},${left},${top} Q${right/2},${top},${right},${0} Q${right/2},${bottom},${left},${bottom} Q${left*k} ${bottom/2} ${left*k} ${0}`}></path>;
 		}
 		if(type == BlockTypes.all.and) return <path className="no-events" d={`M${left},${top} L${0},${top}, A ${.1} ${.1} 0 0 1 ${0} ${bottom} L${left} ${bottom} Z`}></path>;
+		if(type == BlockTypes.all.nand) return <g>
+				<path className="no-events" d={`M${left},${top} L${left/3},${top}, A ${.1} ${.1} 0 0 1 ${left/3} ${bottom} L${left} ${bottom} Z`}></path>
+				<circle className="no-events" cx={right + 1} fill="#00000000" r={2}></circle>
+			</g>;
 
 		if(type == BlockTypes.all.not) return <g>
 			<path className="no-events"  d={`M${left},${top/2} L${right-2-border},${0} L${left} ${bottom/2} Z`}></path>

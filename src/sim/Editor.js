@@ -104,7 +104,7 @@ function Editor() {
 				}
 				let frame = Vars.frame("blocks-pattle");
 				let w = 30;
-				let h = 120;
+				let h = w*(bs.length-1);
 				let raito = `${frame.box.w} / ${frame.box.h}`;
 				return <div className="block-pattle-box" style={{aspectRatio: raito}}>
 					<svg className="block-pattle" style={{aspectRatio: raito}} viewBox={`${w/-2} ${w/-2} ${w} ${h}`} xmlns="http://www.w3.org/2000/svg" id="main-svg" fill="#7a7a7a">
@@ -174,7 +174,7 @@ function Editor() {
 							eElements.push(<input key={'input-' + key} key={key + "-input"} type="number" min={config.min} max={config.max} value={target[key+"tmp"] == undefined ? target[key] : target[key+"tmp"]} onChange={e => {
 								let value = e.target.value;
 								target[key+"tmp"] = value;
-								if(config.min <= value && value < config.max) {
+								if((config.min == undefined || config.min <= value) && (config.max == undefined || value < config.max)) {
 									target[key] = value;
 								}
 								Vars.renderScheme();
