@@ -210,6 +210,15 @@ let Vars = {
 	    return pt.matrixTransform(svg.getScreenCTM().inverse());
 	},
 
+	isSvgPointVisible: (x,y,r) => {
+		x = (x - Vars.camera.x) / Vars.camera.scale;
+		y = (y - Vars.camera.y) / Vars.camera.scale;
+		r = r / Vars.camera.scale;
+		if(x+r < -window.innerWidth/2  || x-r > window.innerWidth/2) return false;
+		if(y+r < -window.innerHeight/2 || y-r > window.innerHeight/2) return false;
+		return true;
+	},
+
 	getSvgMousePos() {
 		let transform = (p) => {
 			if(p == undefined) return undefined;

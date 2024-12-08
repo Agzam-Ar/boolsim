@@ -102,6 +102,8 @@ class WireElement extends React.Component {
 		if(selected && border <= 0) {
 			border = .2  * Themes.theme.powerSize;
 		}
+
+		if(!Vars.isSvgPointVisible(x1,y1, border) && !Vars.isSvgPointVisible(x2,y2, border)) return <g></g>;
 		
         return (<g stroke={pfromActive ? "#ff00aa" : Themes.theme.unactive}>
         	<defs>

@@ -69,6 +69,11 @@ class BlockElement extends React.Component {
 			if(selected) eOutputsSelected.push(this.createPort('o', i, port, true));
 		}
 
+		if(!this.block.preset 
+			&& !Vars.isSvgPointVisible(box.x-box.w,box.y-box.h) 
+			&& !Vars.isSvgPointVisible(box.x+box.w,box.y-box.h)
+			&& !Vars.isSvgPointVisible(box.x-box.w,box.y+box.h) 
+			&& !Vars.isSvgPointVisible(box.x+box.w,box.y+box.h)) return <g></g>;
 
 		let glow = this.block.active && Themes.theme.glow;
 		let border = Themes.theme.powerBorderSize * Themes.theme.powerSize;
