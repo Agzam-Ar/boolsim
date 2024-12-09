@@ -192,11 +192,11 @@ let Vars = {
 	
 	updates: 0,
 	nextUpdate: () => Vars.updates++,
-	updateBlocks: () => {
+	updateBlocks: (render=true) => {
 		let update = Vars.nextUpdate();
 		// console.log('globalupdate', update);
 		for (let b of Object.values(Vars.getBlocks())) {
-			if(b != undefined) b.update(update);
+			if(b != undefined) b.update(update, render);
 		}
 	},
 
@@ -210,12 +210,15 @@ let Vars = {
 	    return pt.matrixTransform(svg.getScreenCTM().inverse());
 	},
 
-	isSvgPointVisible: (x,y,r) => {
+	isSvgPointVisible: (x,y,w,h) => {
+		if(w == undefined) w = 0;
+		if(h == undefined) h = w;
 		x = (x - Vars.camera.x) / Vars.camera.scale;
 		y = (y - Vars.camera.y) / Vars.camera.scale;
-		r = r / Vars.camera.scale;
-		if(x+r < -window.innerWidth/2  || x-r > window.innerWidth/2) return false;
-		if(y+r < -window.innerHeight/2 || y-r > window.innerHeight/2) return false;
+		w = w / Vars.camera.scale;
+		h = h / Vars.camera.scale;
+		if(x+w < -window.innerWidth/2  || x-w > window.innerWidth/2) return false;
+		if(y+h < -window.innerHeight/2 || y-h > window.innerHeight/2) return false;
 		return true;
 	},
 
@@ -409,7 +412,7 @@ class Block {
 		if(this.elementListener != undefined) this.elementListener();
 	}
 
-	update(updateId) {
+	update(updateId, needRender) {
 		if(updateId == this.lastUpdate) {
 			this.loopsStack++;
 			if(this.loopsStack > this.iPorts.length+10) {
@@ -438,9 +441,10 @@ class Block {
 		// 		if(l != undefined) l(updateId);
 		// 	}
 		// }
-		
-		for (let l of Object.values(this.listeners)) {
-			if(l != undefined) l(updateId);
+		if(needRender != false) this.render();
+		for (let lk of Object.keys(this.listeners)) {
+			// if(needRender == false && lk == 'element') continue;
+			if(this.listeners[lk] != undefined) this.listeners[lk](updateId, needRender);
 		}
 	}
 
@@ -588,9 +592,9 @@ class Wire {
 			return;
 		}
 		to.iPorts[this.toPort].active = from.oPorts[this.fromPort].active;
-		to.update(updateId);
 		
 		if(this.lastUpdateActive != from.oPorts[this.fromPort].active) {
+			to.update(updateId);
 			this.repaint();
 			this.lastUpdateActive = from.oPorts[this.fromPort].active;
 		}
@@ -599,7 +603,7 @@ class Wire {
 
 	addListeners() {
 		if(this.blocks[this.from] != undefined && this.id != undefined) {
-			this.blocks[this.from].listeners['linkUpdateTo' + this.id] = (uid) => {this.update(uid)};
+			this.blocks[this.from].listeners['linkUpdateTo' + this.id] = (uid, needRender) => {this.update(uid, needRender)};
 		} else {
 			console.warn("block is undefined");
 		}
@@ -1027,7 +1031,6 @@ if(needExample) {
 			sums.push(sum);
 		}
 
-
 		for (var i = 0; i < n-1; i++) {
 			let first = i == 0;
 			let f = sums[i];
@@ -1042,12 +1045,62 @@ if(needExample) {
 			new Wire({from:sums[i].s.id, to:cs[i].id, fromPort:0, toPort:0});
 		}
 
-
 		let p = new Block({type: BlockTypes.all.lamp,  x:n*4+8, y:n*6, name: 'p'});
 			new Wire({from:sums[n-1].p.id, to:p.id, fromPort:0, toPort:0});
 
 	}
 
+	const createMul = (n) => {
+		
+		let as = [];
+		let bs = [];
+		let ps = [];
+		
+		let cw = 15;
+		let ch = 15;
+
+		for (var i = 0; i < n; i++) {
+			let x = (n-i-1)*cw;
+			let y = -ch;
+			as.push(new Block({type: BlockTypes.all.switch,  x:x, y:y, name: 'A' + (i+1), angle:3}));
+		}
+		for (var i = 0; i < n; i++) {
+			let x = n*cw;
+			let y = i*ch;
+			bs.push(new Block({type: BlockTypes.all.switch,  x:x, y:y, name: 'B' + (i+1), angle:2}));
+		}
+
+		for (var i = 0; i < n*2; i++) {
+			let x = (n-i-1)*cw;
+			let y = n*ch;
+			ps.push(new Block({type: BlockTypes.all.lamp,  x:x, y:y, name: 'P' + (i+1), angle:3}));
+		}
+		
+		for (var iy = 0; iy < n; iy++) {
+			let bNodeSrc = bs[iy];
+			let newIns = [];
+			for (var ix = 0; ix < n; ix++) {
+				let x = (n-ix-1-iy)*cw;
+				let y = iy*ch;
+				let bNode = new Block({type: BlockTypes.all.node,  x:x, y:y, name: 'B1'});
+				new Wire({from:bNodeSrc.id, to:bNode.id, fromPort:0, toPort:0});
+				bNodeSrc = bNode;
+
+				let abAnd  = new Block({type: BlockTypes.all.and,  x:x, y:y+2, name: '&', angle:3});
+				new Wire({from:bNode.id, to:abAnd.id, fromPort:0, toPort:1});
+				
+				new Wire({from:as[ix].id, to:abAnd.id, fromPort:0, toPort:0});
+
+				let sum = {};
+
+				sum.bNode = new Block({type: BlockTypes.all.node,  x:x+4, y:y+1, name: 'S-A'});
+				sum.aNode = new Block({type: BlockTypes.all.node,  x:x+6, y:y+2, name: 'S-A'});
+				sum.cNode = new Block({type: BlockTypes.all.node,  x:x+7, y:y+6, name: 'S-C'});
+
+				sum.lXor = new Block({type: BlockTypes.all.xor, x:x+5,y:y+4, name: "L-XOR", angle:3});
+			}
+		}
+	};
 
 	if(window.location.hash.startsWith("#@adder")) {
 		let n = parseInt(window.location.hash.substring("#@adder".length));
@@ -1055,6 +1108,14 @@ if(needExample) {
 			console.log('secret code');
 			needExample = false;
 			createSum(n);
+		}
+	}
+	if(needExample && window.location.hash.startsWith("#@multiplier")) {
+		let n = parseInt(window.location.hash.substring("#@multiplier".length));
+		if(!isNaN(n)) {
+			console.log('secret code');
+			needExample = false;
+			createMul(n);
 		}
 	}
 

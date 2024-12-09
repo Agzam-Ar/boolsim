@@ -48,7 +48,7 @@ class BlockElement extends React.Component {
     	if(!this.preset) this.block = Vars.getBlocks()[this.id];
 
 	    const listener = () => {this.repaint()};
-		this.block.listeners["element"] = listener;
+		// this.block.listeners["element"] = listener;
 		this.block.elementListener = listener;
 
 		let box = this.block.box;
@@ -141,7 +141,7 @@ class BlockElement extends React.Component {
 			{glow ? <g transform={`rotate(${this.block.angle*-90} 0 0)`} className="bloor2">{this.getBody()}</g> : []}
 			{Themes.theme.standart ? undefined : <text className="label" stroke={Themes.theme.labelBorderColor} strokeWidth=".5">{this.block.name}</text>}
 			{<text className="label" stroke="none" fill={Themes.theme.labelColor}>{this.block.name}</text>}
-			{/*{<text className="label" y="10" stroke="none">{this.block.lastUpdate}({this.block.loopsStack+""})</text>}*/}
+			{/*{<text className="label" y="10" fill="#f00" stroke="none">{this.block.lastUpdate}({this.block.loopsStack+""}) #{this.block.id}</text>}*/}
         </g>);
     }
 
@@ -285,7 +285,6 @@ class BlockElement extends React.Component {
 			<circle stroke={this.block.active ? "inherit" : Themes.theme.funcAccent} className={this.block.preset ? "no-events" : "clickable"} r={Math.min(box.w, box.h)*.25} onClick={() => {
 				if(this.block.preset) return;
 				this.block.setActive(!this.block.active);
-				// this.block.update();
 			}}></circle>
 		</g>;
 

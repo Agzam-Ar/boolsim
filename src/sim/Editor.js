@@ -296,7 +296,7 @@ function Editor() {
 									for (var i = 0; i < inputs.length; i++) {
 										inputs[i].active = ((1 << i) & s) == 0;
 									}
-									Vars.updateBlocks();
+									Vars.updateBlocks(false);
 									addStateToTable();
 								}
 								Vars.renderScheme();
